@@ -252,17 +252,25 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       } catch(e){ console.error('saveThreshold error:', e); }
     }
 
+    // Track signouts pushed from THIS device so realtime echo is ignored
+    const _localPushedSignouts = new Set();
+
     // ── SAVE signout to Supabase ───────────────────────────────
     async function saveSignout(record){
       if(!DB_READY) return;
       setSyncIndicator('saving');
       try {
-        // Store signature as text (base64) — Supabase handles up to 1MB per field
-        await sb.from('signouts').insert({
+        const { data, error } = await sb.from('signouts').insert({
           date: record.date, member_name: record.name, team: record.team,
           item: record.item, size: record.size, qty: record.qty,
           site: record.site, signature_url: record.sig
-        });
+        }).select('created_at').single();
+        if(error) throw error;
+        // Register fingerprint so realtime echo is skipped
+        if(data) {
+          const fp = record.date+'|'+record.name+'|'+record.item+'|'+record.qty+'|'+data.created_at;
+          _localPushedSignouts.add(fp);
+        }
         setSyncIndicator('online');
       } catch(e){ console.error('saveSignout error:', e); setSyncIndicator('error'); }
     }
@@ -291,10 +299,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         })
         .on('postgres_changes', {event:'INSERT', schema:'public', table:'signouts'}, payload => {
           const r = payload.new;
+          // Skip if this INSERT came from THIS device (we already added it locally)
+          const fingerprint = r.date + '|' + r.member_name + '|' + r.item + '|' + r.qty + '|' + r.created_at;
+          if(_localPushedSignouts.has(fingerprint)) {
+            _localPushedSignouts.delete(fingerprint);
+            return;
+          }
+          // This came from another device — add it
           signouts.unshift({date:r.date, name:r.member_name, team:r.team,
             item:r.item, size:r.size, qty:r.qty, site:r.site, sig:r.signature_url});
           document.getElementById('dash-so-count').textContent = signouts.length;
           if(document.getElementById('page-log').classList.contains('active')) renderLog();
+          if(document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
         })
         .on('postgres_changes', {event:'*', schema:'public', table:'thresholds'}, payload => {
           thresholds[payload.new.name] = payload.new.value;
@@ -836,7 +852,12 @@ function updateTeamMemberCount(teamKey, memberName, ppeSigoutItem, qty){
   return true;
 }
 
-function submitSignout(){const name=document.getElementById('so-name').value;const team=document.getElementById('so-team').value;const date=document.getElementById('so-date').value||new Date().toISOString().split('T')[0];const site=document.getElementById('so-site').value||'Warehouse';if(!name||!team){alert('Please select a team and team member.');return;}const items=[];PPE_ITEMS.forEach(item=>{const k=item.replace(/\s/g,'_');const sz=document.getElementById('sz-'+k)?.value;const qt=parseInt(document.getElementById('qt-'+k)?.value||0);if(qt>0)items.push({item,size:sz||'—',qty:qt});});if(items.length===0){alert('Please enter at least one PPE item with a quantity.');return;}if(sigIsEmpty()){
+let _submitting = false;
+function submitSignout(){
+  if(_submitting) return;
+  _submitting = true;
+  setTimeout(()=>{ _submitting=false; }, 3000); // reset after 3s
+  const name=document.getElementById('so-name').value;const team=document.getElementById('so-team').value;const date=document.getElementById('so-date').value||new Date().toISOString().split('T')[0];const site=document.getElementById('so-site').value||'Warehouse';if(!name||!team){alert('Please select a team and team member.');return;}const items=[];PPE_ITEMS.forEach(item=>{const k=item.replace(/\s/g,'_');const sz=document.getElementById('sz-'+k)?.value;const qt=parseInt(document.getElementById('qt-'+k)?.value||0);if(qt>0)items.push({item,size:sz||'—',qty:qt});});if(items.length===0){alert('Please enter at least one PPE item with a quantity.');return;}if(sigIsEmpty()){
     document.getElementById('sig-required').classList.add('show');
     document.getElementById('sig-canvas').scrollIntoView({behavior:'smooth',block:'center'});
     return;
@@ -874,7 +895,7 @@ function submitSignout(){const name=document.getElementById('so-name').value;con
   if(document.getElementById('page-teamppe').classList.contains('active')) renderTeamPPE();
   alert(`✓ Sign-out recorded for ${name} — ${items.length} item(s) logged.\n\nWarehouse stock and team PPE counts have been updated.`);
   clearForm();}
-function clearForm(){document.getElementById('so-team').value='';document.getElementById('so-name').innerHTML='<option>Select team first...</option>';document.getElementById('so-date').value=new Date().toISOString().split('T')[0];document.getElementById('so-site').value='';clearSig();renderPPEForm();}
+function clearForm(){document.getElementById('so-team').value='';document.getElementById('so-name').innerHTML='<option>Select team first...</option>';document.getElementById('so-date').value=new Date().toISOString().split('T')[0];document.getElementById('so-site').value='';clearSig();renderPPEForm();_submitting=false;}
 function getLow(){return STOCK.filter(s=>s.qty<(thresholds[s.n]||12));}
 function statusBadge(qty,t){if(qty<=t*0.4)return'<span class="badge b-danger">Critical</span>';if(qty<=t)return'<span class="badge b-reorder">Reorder</span>';return'<span class="badge b-ok">OK</span>';}
 function renderStock(){const search=(document.getElementById('stock-search')?.value||'').toLowerCase();const cat=document.getElementById('stock-cat')?.value||'';const low=document.getElementById('low-only')?.checked;const filtered=STOCK.filter(s=>(!search||s.n.toLowerCase().includes(search))&&(!cat||s.cat===cat)&&(!low||s.qty<=(thresholds[s.n]||12)));document.getElementById('stock-tbody').innerHTML=filtered.map(s=>{const t=thresholds[s.n]||12;const isLow=s.qty<=t;const pct=Math.min(100,Math.round(s.qty/30*100));const safeKey=s.n.replace(/[^a-zA-Z0-9]/g,'_');
