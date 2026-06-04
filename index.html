@@ -146,6 +146,35 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
 .recv-preview-new{font-weight:700;color:var(--green)}
 .recv-preview-row td:last-child{color:var(--green);font-weight:700}
 
+
+.ppe-warn-badge{display:inline-flex;align-items:center;gap:4px;background:#fff3cd;border:1px solid #fddd00;
+  border-radius:4px;padding:2px 7px;font-size:10px;color:#856404;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;letter-spacing:0.04em;cursor:pointer;margin-left:6px;vertical-align:middle}
+.ppe-warn-badge:hover{background:#ffe69c}
+.ppe-row-warned{background:#fffde6 !important}
+.ppe-row-warned .ppe-name{color:#856404}
+
+/* Warning modal */
+.warn-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(42,42,42,0.75);
+  z-index:9000;display:flex;align-items:center;justify-content:center;padding:20px}
+.warn-modal{background:#fff;border-radius:12px;width:100%;max-width:520px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.warn-modal-header{background:#2a2a2a;padding:14px 18px;display:flex;align-items:center;gap:10px}
+.warn-modal-header .accent{width:3px;height:36px;background:#fddd00;border-radius:2px;flex-shrink:0}
+.warn-modal-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;
+  color:#fff;text-transform:uppercase;letter-spacing:0.06em}
+.warn-modal-sub{font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;letter-spacing:0.04em}
+.warn-modal-body{padding:16px 18px}
+.warn-modal-item{background:#fff3cd;border:1px solid #fddd00;border-left:4px solid #fddd00;
+  border-radius:6px;padding:10px 12px;margin-bottom:10px}
+.warn-modal-item:last-child{margin-bottom:0}
+.warn-item-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.warn-item-name{font-size:13px;font-weight:600;color:#3f3f40}
+.warn-item-date{font-size:11px;color:#856404;font-family:'Barlow Condensed',sans-serif;font-weight:700}
+.warn-item-detail{font-size:11px;color:#9ea0a3}
+.warn-modal-footer{padding:12px 18px;border-top:1px solid var(--border);
+  display:flex;gap:8px;justify-content:flex-end;background:#f9f8f5}
+
 </style>
 
   <!-- PDF Export Libraries -->
@@ -384,7 +413,18 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       </div>
     </div>
     <div class="page" id="page-signout">
-      <div class="topbar"><h1>Sign out PPE</h1><div class="topbar-actions"><button class="btn btn-primary" onclick="submitSignout()">&#10003; Record sign-out</button></div></div>
+      <div class="topbar"><h1>Sign out PPE</h1><div class="topbar-actions">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--grey)">
+          <span style="font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.06em">Warn if signed out within</span>
+          <select id="warn-period" onchange="WARN_DAYS=parseInt(this.value)" style="height:28px;font-size:11px;width:auto;padding:0 6px">
+            <option value="14">2 weeks</option>
+            <option value="30" selected>1 month</option>
+            <option value="60">2 months</option>
+            <option value="90">3 months</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="submitSignout()">&#10003; Record sign-out</button>
+      </div></div>
       <div class="content">
         <div class="card"><div class="card-header"><span class="card-title">Team member details</span></div>
           <div class="form-grid">
@@ -555,7 +595,16 @@ let thresholds={};STOCK.forEach(s=>{
 const MEMBERS={'Team 1 — KG':['Katlego (KB)','Alfred (AM)','Roberto (RS)','Michael (MS)','Dirk (DH)'],'Team 2 — Thulani':['Thulani (TM)','Andile (AM)','Erick (E)','Nangamso (NN)','Doctor (DM)'],'Team 3 — Sipho':['Sipho (SM)','Lizwi (LT)','Given (GM)','Sibusiso (SB)'],'Team 4 — Frans':['Frans (FM)','Simon M (SM)','Andy (AS)','Simon H (SH)','Richard (R)'],'Team 5 — Jacques':['Jacques (JJ)','Victor (VH)','Ishmael (IM)','Sihle (SM)','Nhlanhla (NS)'],'Team 6 — Justinos':['Justinos (JL)','Goodwill (GN)','Potego (PS)','Daniel (DN)','Siyabonga (SM)'],'Team 7 — Piet':['Piet (PL)','Themba (TN)','Emanuel (EN)','Alfred M (AM2)','Thembeka (TD)','Vincent (VL)'],'O&M Francois':['Francois (FB)','Johannes (JS)'],'O&M Steven':['Steven (SD)','Simphiwe (SS)'],'Students':['Admision (AN)','Phathutshebzo (PR)','Vanessa (VM)','Koketso (KM)','Bongani (BN)'],'Management / Warehouse':['William Jnr (WJ)','Jaco Joubert (JJ)','Cornelis Bezuidenhout (CB)','David Wilson (DW)']};
 let signouts=[];
 function nav(btn,page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');if(btn)btn.classList.add('active');if(page==='stock')renderStock();if(page==='teamppe')renderTeamPPE();if(page==='log')renderLog();if(page==='reorder')renderReorder();if(page==='dashboard')renderDashboard();if(page==='signout')setTimeout(initSigPad,80);if(page==='receive'){renderReceiveGrid();clearReceive();}}
-function updateMembers(){const t=document.getElementById('so-team').value;const s=document.getElementById('so-name');s.innerHTML='<option value="">Select member...</option>';(MEMBERS[t]||[]).forEach(m=>s.innerHTML+=`<option>${m}</option>`);}
+function updateMembers(){
+  const t=document.getElementById('so-team').value;
+  const s=document.getElementById('so-name');
+  s.innerHTML='<option value="">Select member...</option>';
+  (MEMBERS[t]||[]).forEach(m=>s.innerHTML+=`<option>${m}</option>`);
+}
+// Called when name changes — check each filled row for warnings
+function onNameChange(){
+  updateMembers();
+}
 // ── Signature pad ──────────────────────────────────────────
 let sigCanvas, sigCtx, sigDrawing=false, sigHasSig=false, sigLastX=0, sigLastY=0;
 
@@ -865,7 +914,23 @@ function submitSignout(){
     document.getElementById('sig-canvas').scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
+  // Check for recent duplicate sign-outs
+  const warnings = checkDuplicateSignouts(name, team, items);
+  if(warnings.length > 0){
+    showWarnModal(
+      warnings,
+      name,
+      () => { _doSubmitSignout(name,team,date,site,items); }, // proceed
+      () => { _submitting=false; }                             // cancel
+    );
+    return;
+  }
   const sigImg = getSigDataURL();
+  _doSubmitSignout(name,team,date,site,items,sigImg);
+}
+
+function _doSubmitSignout(name,team,date,site,items,sigImg){
+  if(!sigImg){ sigImg=getSigDataURL(); }
   items.forEach(i=>{
     const rec={date,name,team,item:i.item,size:i.size,qty:i.qty,site,sig:sigImg};
     signouts.push(rec);
@@ -897,7 +962,8 @@ function submitSignout(){
   // Refresh team PPE page if it's currently visible
   if(document.getElementById('page-teamppe').classList.contains('active')) renderTeamPPE();
   alert(`✓ Sign-out recorded for ${name} — ${items.length} item(s) logged.\n\nWarehouse stock and team PPE counts have been updated.`);
-  clearForm();}
+  clearForm();
+}
 function clearForm(){document.getElementById('so-team').value='';document.getElementById('so-name').innerHTML='<option>Select team first...</option>';document.getElementById('so-date').value=new Date().toISOString().split('T')[0];document.getElementById('so-site').value='';clearSig();renderPPEForm();_submitting=false;}
 function getLow(){return STOCK.filter(s=>s.qty<(thresholds[s.n]||12));}
 function statusBadge(qty,t){if(qty<=t*0.4)return'<span class="badge b-danger">Critical</span>';if(qty<=t)return'<span class="badge b-reorder">Reorder</span>';return'<span class="badge b-ok">OK</span>';}
@@ -1023,6 +1089,145 @@ function renderReorder(skipGrid){
 function updateReorderBadge(){const c=getLow().length;const b=document.getElementById('reorder-badge');b.textContent=c>0?c:'';b.style.display=c>0?'inline-flex':'none';document.getElementById('dash-reorder-val').textContent=c;}
 function renderDashboard(){const low=getLow();document.getElementById('dash-alert-banner').innerHTML=low.length>0?`<div class="notice notice-warn">&#9888; ${low.length} PPE item${low.length>1?'s':''} need reordering. <button class="btn btn-sm" onclick="nav(null,'reorder')" style="margin-left:8px">View</button></div>`:'';document.getElementById('dash-reorder-badge').textContent=low.length>0?low.length+' items':'All OK';document.getElementById('dash-reorder-badge').className='badge '+(low.length>0?'b-danger':'b-ok');document.getElementById('dash-reorder-list').innerHTML=low.length===0?'<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">&#10003; All stock levels OK</div>':low.slice(0,5).map(s=>`<div class="log-row"><div class="log-dot" style="background:${s.qty<=(thresholds[s.n]||12)*0.4?'var(--red)':'var(--orange)'}"></div><div><div class="log-text"><strong>${s.n}</strong> — ${s.qty} remaining</div><div class="log-time">Min: ${thresholds[s.n]||12} · Suggest ordering ${(thresholds[s.n]||12)*2-s.qty} units</div></div></div>`).join('');updateDashLog();const cats=[...new Set(STOCK.map(s=>s.cat))];document.getElementById('stock-overview').innerHTML=cats.map(cat=>{const items=STOCK.filter(s=>s.cat===cat);const total=items.reduce((a,b)=>a+b.qty,0);const nlow=items.filter(s=>s.qty<=(thresholds[s.n]||12)).length;const cls=nlow>0?(nlow>=items.length*0.5?'ov-low':'ov-warn'):'ov-ok';return`<div class="ov-card ${cls}"><div class="ov-label">${cat}</div><div class="ov-val">${total}</div><div class="ov-sub">${items.length} variants${nlow>0?` · <span style="color:var(--red)">${nlow} low</span>`:' · All OK'}</div></div>`;}).join('');}
 function updateDashLog(){const el=document.getElementById('dash-log');if(!signouts.length){el.innerHTML='<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">No sign-outs yet.</div>';return;}el.innerHTML=signouts.slice(-4).reverse().map(s=>`<div class="log-row"><div class="log-dot" style="background:var(--red)"></div><div><div class="log-text">${s.item} — ${s.name}</div><div class="log-time">${s.date} · ${s.team} · ${s.site}</div></div></div>`).join('');}
+
+
+// ── Duplicate sign-out warning system ─────────────────────────────────────
+const WARN_DAYS = 30; // warn if same item signed out within this many days
+
+function daysBetween(dateStr1, dateStr2){
+  // dateStr format: YYYY-MM-DD or DD/MM/YYYY
+  function parseDate(s){
+    if(!s) return null;
+    if(s.includes('-')) return new Date(s);
+    const [d,m,y] = s.split('/');
+    return new Date(`${y}-${m}-${d}`);
+  }
+  const d1 = parseDate(dateStr1);
+  const d2 = parseDate(dateStr2);
+  if(!d1||!d2) return 999;
+  return Math.abs((d2-d1)/(1000*60*60*24));
+}
+
+
+function checkRowWarning(itemName, k){
+  const qty = parseInt(document.getElementById('qt-'+k)?.value||0);
+  const memberName = document.getElementById('so-name')?.value||'';
+  const row = document.getElementById('row-'+k);
+  const nameEl = document.getElementById('pname-'+k);
+  if(!row||!nameEl) return;
+  // Remove old badge
+  const old = nameEl.querySelector('.ppe-warn-badge');
+  if(old) old.remove();
+  row.classList.remove('ppe-row-warned');
+  if(!qty || !memberName) return;
+  const warns = checkDuplicateSignouts(memberName, '', [{item:itemName,size:'',qty}]);
+  if(warns.length > 0){
+    const w = warns[0];
+    row.classList.add('ppe-row-warned');
+    const badge = document.createElement('span');
+    badge.className = 'ppe-warn-badge';
+    badge.title = `Last signed out ${w.days} day${w.days>1?'s':''} ago on ${w.prevDate}`;
+    badge.innerHTML = `⚠ ${w.days}d ago`;
+    badge.onclick = (e) => {
+      e.stopPropagation();
+      showWarnModal([w], memberName, ()=>{}, ()=>{});
+    };
+    nameEl.appendChild(badge);
+  }
+}
+
+function checkDuplicateSignouts(memberName, teamName, items){
+  // items = [{item, size, qty}]
+  // Returns array of warnings: [{item, size, qty, prevDate, prevSite, prevQty, days}]
+  if(!memberName || !items.length) return [];
+  const cleanName = memberName.replace(/\s*\(\w+\)\s*$/, '').trim().toLowerCase();
+  const today = new Date().toISOString().split('T')[0];
+  const warnings = [];
+
+  items.forEach(i => {
+    if(!i.qty || i.qty <= 0) return;
+    const itemLower = i.item.toLowerCase();
+    // Find recent sign-outs for same person + same item
+    const recent = signouts.filter(s => {
+      const sName = s.name.replace(/\s*\(\w+\)\s*$/, '').trim().toLowerCase();
+      const sItem = s.item.toLowerCase();
+      return (sName === cleanName || s.name.toLowerCase() === cleanName) &&
+             (sItem === itemLower || sItem.includes(itemLower.split(' ')[0])) &&
+             daysBetween(s.date, today) <= WARN_DAYS;
+    });
+    if(recent.length > 0){
+      // Get the most recent one
+      const latest = recent.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+      const days = Math.round(daysBetween(latest.date, today));
+      warnings.push({
+        item: i.item,
+        size: i.size,
+        qty: i.qty,
+        prevDate: latest.date,
+        prevSite: latest.site || '—',
+        prevQty: latest.qty,
+        prevSize: latest.size || '—',
+        days: days
+      });
+    }
+  });
+  return warnings;
+}
+
+function showWarnModal(warnings, memberName, onProceed, onCancel){
+  const overlay = document.createElement('div');
+  overlay.className = 'warn-modal-overlay';
+  const cleanName = memberName.replace(/\s*\(\w+\)\s*$/, '').trim();
+
+  let warningRows = warnings.map(w => `
+    <div class="warn-modal-item">
+      <div class="warn-item-row">
+        <span class="warn-item-name">${w.item}${w.size && w.size !== '—' ? ' — ' + w.size : ''}</span>
+        <span class="warn-item-date">${w.days === 0 ? 'Today' : w.days + ' day' + (w.days>1?'s':'')+' ago'}</span>
+      </div>
+      <div class="warn-item-detail">
+        Previously signed out: <strong>${w.prevQty} unit${w.prevQty>1?'s':''}</strong>
+        ${w.prevSize && w.prevSize !== '—' ? '· Size ' + w.prevSize : ''}
+        · ${w.prevDate} · ${w.prevSite}
+      </div>
+    </div>
+  `).join('');
+
+  overlay.innerHTML = `
+    <div class="warn-modal">
+      <div class="warn-modal-header">
+        <div class="accent"></div>
+        <div>
+          <div class="warn-modal-title">⚠ Recent sign-out detected</div>
+          <div class="warn-modal-sub">${cleanName} · ${warnings.length} item${warnings.length>1?'s':''} signed out within the last ${WARN_DAYS} days</div>
+        </div>
+      </div>
+      <div class="warn-modal-body">
+        <p style="font-size:12px;color:#3f3f40;margin-bottom:12px;line-height:1.5">
+          The following items were already signed out to <strong>${cleanName}</strong> recently.
+          Please confirm this is a new issue and not a duplicate.
+        </p>
+        ${warningRows}
+      </div>
+      <div class="warn-modal-footer">
+        <button class="btn" id="warn-cancel-btn">Cancel — go back</button>
+        <button class="btn btn-primary" id="warn-proceed-btn">Confirm &amp; proceed anyway</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  document.getElementById('warn-cancel-btn').onclick = () => { document.body.removeChild(overlay); onCancel(); };
+  document.getElementById('warn-proceed-btn').onclick = () => { document.body.removeChild(overlay); onProceed(); };
+  // Click outside to cancel
+  overlay.addEventListener('click', e => { if(e.target===overlay){ document.body.removeChild(overlay); onCancel(); }});
+}
+
+// ── Period selector for warnings ──────────────────────────────────────────
+function setWarnPeriod(days){
+  // Called from the settings (future use) or inline
+  window.WARN_DAYS = days;
+}
+// ──────────────────────────────────────────────────────────────────────────
 
 function _generatePDF(reportHtml, elId, filename){
   const container=document.createElement('div');
