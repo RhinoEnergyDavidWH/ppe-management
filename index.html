@@ -148,6 +148,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
 
 </style>
 
+  <!-- PDF Export Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
@@ -334,7 +337,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
     <div class="header-right">
       <span class="hdr-date" id="hdr-date"></span>
       <span id="sync-indicator" style="font-size:10px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;cursor:default;opacity:0.7">○ Connecting...</span>
-      <button class="hdr-btn" onclick="exportLog()">&#8659; Export log</button>
+      <button class="hdr-btn" onclick="exportLog()">&#8659; Export PDF</button>
       <button class="toggle-btn" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
         <svg viewBox="0 0 24 24" id="toggle-icon"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
@@ -447,13 +450,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       </div>
     </div>
     <div class="page" id="page-log">
-      <div class="topbar"><h1>Sign-out log</h1><div class="topbar-actions"><button class="btn btn-dark" onclick="exportLog()">&#8659; Export CSV</button></div></div>
+      <div class="topbar"><h1>Sign-out log</h1><div class="topbar-actions"><button class="btn btn-dark" onclick="exportLog()">&#8659; Export PDF</button></div></div>
       <div class="content"><div class="filter-row"><input type="text" placeholder="Search name or item..." id="log-search" oninput="renderLog()"><select id="log-team" onchange="renderLog()"><option value="">All teams</option><option>Team 1 — KG</option><option>Team 2 — Thulani</option><option>Team 3 — Sipho</option><option>Team 4 — Frans</option><option>Team 5 — Jacques</option><option>Team 6 — Justinos</option><option>Team 7 — Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option></select><input type="date" id="log-date" onchange="renderLog()" style="max-width:150px"></div>
         <div class="card" style="padding:0;overflow:hidden"><table><thead><tr><th style="width:12%">Date</th><th style="width:18%">Name</th><th style="width:14%">Team</th><th style="width:20%">Item</th><th style="width:8%">Size</th><th style="width:6%">Qty</th><th style="width:10%">Site</th><th style="width:12%">Signature</th></tr></thead><tbody id="log-tbody"><tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr></tbody></table></div>
       </div>
     </div>
     <div class="page" id="page-reorder">
-      <div class="topbar"><h1>Reorder flags</h1><div class="topbar-actions"><button class="btn btn-dark" onclick="exportReorder()">&#8659; Export list</button></div></div>
+      <div class="topbar"><h1>Reorder flags</h1><div class="topbar-actions"><button class="btn btn-dark" onclick="exportReorder()">&#8659; Export PDF</button></div></div>
       <div class="content"><div id="reorder-notice"></div>
         <div class="card" style="padding:0;overflow:hidden"><table><thead><tr><th style="width:33%">Item</th><th style="width:13%">Category</th><th style="width:9%">Stock</th><th style="width:9%">Min.</th><th style="width:12%">Status</th><th style="width:12%">Deficit</th><th style="width:12%">Suggest order</th></tr></thead><tbody id="reorder-tbody"></tbody></table></div>
         <div class="card" style="margin-top:14px"><div class="card-header"><span class="card-title">Adjust reorder thresholds</span></div><p style="font-size:12px;color:var(--grey);margin-bottom:10px">Set the minimum stock level that triggers a reorder flag.</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="threshold-grid"></div></div>
@@ -1020,210 +1023,192 @@ function renderReorder(skipGrid){
 function updateReorderBadge(){const c=getLow().length;const b=document.getElementById('reorder-badge');b.textContent=c>0?c:'';b.style.display=c>0?'inline-flex':'none';document.getElementById('dash-reorder-val').textContent=c;}
 function renderDashboard(){const low=getLow();document.getElementById('dash-alert-banner').innerHTML=low.length>0?`<div class="notice notice-warn">&#9888; ${low.length} PPE item${low.length>1?'s':''} need reordering. <button class="btn btn-sm" onclick="nav(null,'reorder')" style="margin-left:8px">View</button></div>`:'';document.getElementById('dash-reorder-badge').textContent=low.length>0?low.length+' items':'All OK';document.getElementById('dash-reorder-badge').className='badge '+(low.length>0?'b-danger':'b-ok');document.getElementById('dash-reorder-list').innerHTML=low.length===0?'<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">&#10003; All stock levels OK</div>':low.slice(0,5).map(s=>`<div class="log-row"><div class="log-dot" style="background:${s.qty<=(thresholds[s.n]||12)*0.4?'var(--red)':'var(--orange)'}"></div><div><div class="log-text"><strong>${s.n}</strong> — ${s.qty} remaining</div><div class="log-time">Min: ${thresholds[s.n]||12} · Suggest ordering ${(thresholds[s.n]||12)*2-s.qty} units</div></div></div>`).join('');updateDashLog();const cats=[...new Set(STOCK.map(s=>s.cat))];document.getElementById('stock-overview').innerHTML=cats.map(cat=>{const items=STOCK.filter(s=>s.cat===cat);const total=items.reduce((a,b)=>a+b.qty,0);const nlow=items.filter(s=>s.qty<=(thresholds[s.n]||12)).length;const cls=nlow>0?(nlow>=items.length*0.5?'ov-low':'ov-warn'):'ov-ok';return`<div class="ov-card ${cls}"><div class="ov-label">${cat}</div><div class="ov-val">${total}</div><div class="ov-sub">${items.length} variants${nlow>0?` · <span style="color:var(--red)">${nlow} low</span>`:' · All OK'}</div></div>`;}).join('');}
 function updateDashLog(){const el=document.getElementById('dash-log');if(!signouts.length){el.innerHTML='<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">No sign-outs yet.</div>';return;}el.innerHTML=signouts.slice(-4).reverse().map(s=>`<div class="log-row"><div class="log-dot" style="background:var(--red)"></div><div><div class="log-text">${s.item} — ${s.name}</div><div class="log-time">${s.date} · ${s.team} · ${s.site}</div></div></div>`).join('');}
+
+function _generatePDF(reportHtml, elId, filename){
+  const container=document.createElement('div');
+  container.style.cssText='position:fixed;left:-9999px;top:0;z-index:-1;background:#f4f3f0';
+  container.innerHTML=reportHtml;
+  document.body.appendChild(container);
+  const loadEl=document.createElement('div');
+  loadEl.id='pdf-loading-overlay';
+  loadEl.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(42,42,42,0.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fddd00;font-family:"Barlow Condensed",sans-serif;letter-spacing:2px;font-size:16px';
+  loadEl.innerHTML='<div style="font-size:32px;margin-bottom:12px;animation:spin 1s linear infinite">↓</div><div>GENERATING PDF...</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;letter-spacing:1px">Please wait</div>';
+  document.body.appendChild(loadEl);
+  const el=container.querySelector('#'+elId);
+  html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#f4f3f0',logging:false})
+  .then(canvas=>{
+    const {jsPDF}=window.jspdf;
+    const imgData=canvas.toDataURL('image/jpeg',0.95);
+    const pdfW=210;
+    const pdfH=(canvas.height*pdfW)/canvas.width;
+    const pageH=297;
+    const pdf=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+    let yPos=0,remH=pdfH;
+    while(remH>0){
+      if(yPos>0)pdf.addPage();
+      pdf.addImage(imgData,'JPEG',0,-yPos,pdfW,pdfH);
+      yPos+=pageH; remH-=pageH;
+    }
+    pdf.save(filename);
+    document.body.removeChild(container);
+    document.body.removeChild(loadEl);
+  }).catch(err=>{
+    console.error('PDF error:',err);
+    document.body.removeChild(container);
+    document.body.removeChild(loadEl);
+    alert('PDF generation failed — please try again.');
+  });
+}
+
 function exportLog(){
   if(!signouts.length){alert('No sign-outs recorded yet.');return;}
-
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-ZA',{day:'2-digit',month:'long',year:'numeric'});
-  const timeStr = now.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
-  const filename = `RES_PPE_SignOut_Log_${now.toISOString().split('T')[0]}.xls`;
-
-  const search = (document.getElementById('log-search')?.value||'').toLowerCase();
-  const team   = document.getElementById('log-team')?.value||'';
-  const date   = document.getElementById('log-date')?.value||'';
-  const filtered = signouts.filter(r=>
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('en-ZA',{day:'2-digit',month:'long',year:'numeric'});
+  const timeStr=now.toLocaleTimeString('en-ZA',{hour:'2-digit',minute:'2-digit'});
+  const search=(document.getElementById('log-search')?.value||'').toLowerCase();
+  const teamF=document.getElementById('log-team')?.value||'';
+  const dateF=document.getElementById('log-date')?.value||'';
+  const filtered=signouts.filter(r=>
     (!search||r.name.toLowerCase().includes(search)||r.item.toLowerCase().includes(search))&&
-    (!team||r.team===team)&&(!date||r.date===date)
-  );
-
-  const byDate = {};
-  filtered.forEach(r=>{ (byDate[r.date]=byDate[r.date]||[]).push(r); });
-  const sortedDates = Object.keys(byDate).sort().reverse();
-
-  let rowsHtml = '';
-  let grandTotal = 0;
-  let rowNum = 1;
-
-  sortedDates.forEach(d => {
-    const dayRows = byDate[d];
-    const dayTotal = dayRows.reduce((s,r)=>s+r.qty,0);
-    grandTotal += dayTotal;
-    const dayLabel = new Date(d+'T12:00:00').toLocaleDateString('en-ZA',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-    rowsHtml += `<tr>
-      <td colspan="9" style="background:#3f3f40;color:#fddd00;font-weight:700;font-size:11pt;
-        padding:7px 12px;font-family:Calibri,sans-serif;letter-spacing:0.04em">
-        ${dayLabel}
-        <span style="float:right;color:rgba(255,255,255,0.55);font-size:9pt;font-weight:400">
-          ${dayRows.length} record${dayRows.length>1?'s':''} &nbsp;·&nbsp; ${dayTotal} unit${dayTotal>1?'s':''} issued
-        </span>
-      </td></tr>`;
+    (!teamF||r.team===teamF)&&(!dateF||r.date===dateF));
+  const byDate={};
+  filtered.forEach(r=>{(byDate[r.date]=byDate[r.date]||[]).push(r);});
+  const sortedDates=Object.keys(byDate).sort().reverse();
+  let grandTotal=0; filtered.forEach(r=>grandTotal+=r.qty);
+  const period=sortedDates.length>0?sortedDates[sortedDates.length-1]+' to '+sortedDates[0]:'—';
+  let rowsHtml=''; let rowNum=1;
+  sortedDates.forEach(d=>{
+    const dayRows=byDate[d];
+    const dayTotal=dayRows.reduce((s,r)=>s+r.qty,0);
+    const dayLabel=new Date(d+'T12:00:00').toLocaleDateString('en-ZA',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+    rowsHtml+=`<tr><td colspan="8" style="background:#3f3f40;color:#fddd00;font-weight:700;font-size:11px;padding:7px 12px;letter-spacing:0.5px">${dayLabel}<span style="float:right;color:rgba(255,255,255,0.55);font-size:9px;font-weight:400">${dayRows.length} record${dayRows.length>1?'s':''} · ${dayTotal} unit${dayTotal>1?'s':''} issued</span></td></tr>`;
     dayRows.forEach((r,i)=>{
-      const bg = i%2===0?'#ffffff':'#f9f8f5';
-      const sigCell = r.sig
-        ? `<img src="${r.sig}" style="height:30px;max-width:100px;vertical-align:middle">`
-        : `<span style="color:#c0392b;font-size:8pt;font-style:italic">No signature</span>`;
-      rowsHtml += `<tr>
-        <td style="background:${bg};padding:7px 10px;color:#9ea0a3;font-family:Calibri;font-size:9pt;text-align:center">${rowNum++}</td>
-        <td style="background:${bg};padding:7px 10px;color:#3f3f40;font-family:Calibri;font-size:10pt">${r.date}</td>
-        <td style="background:${bg};padding:7px 10px;font-weight:600;color:#1a1a1a;font-family:Calibri;font-size:10pt">${r.name}</td>
-        <td style="background:${bg};padding:7px 10px;color:#9ea0a3;font-family:Calibri;font-size:9pt">${r.team}</td>
-        <td style="background:${bg};padding:7px 10px;color:#3f3f40;font-family:Calibri;font-size:10pt">${r.item}</td>
-        <td style="background:${bg};padding:7px 10px;text-align:center;color:#3f3f40;font-family:Calibri;font-size:10pt">${r.size||'—'}</td>
-        <td style="background:${bg};padding:7px 10px;text-align:center;font-weight:700;color:#3f3f40;font-family:Calibri;font-size:11pt">${r.qty}</td>
-        <td style="background:${bg};padding:7px 10px;color:#9ea0a3;font-family:Calibri;font-size:9pt">${r.site||'—'}</td>
-        <td style="background:${bg};padding:7px 10px;text-align:center">${sigCell}</td>
+      const bg=i%2===0?'#ffffff':'#f9f8f5';
+      const sigHtml=r.sig?`<img src="${r.sig}" style="height:28px;max-width:80px;display:block;margin:auto">`:`<span style="color:#c0392b;font-size:8px;font-style:italic">No sig</span>`;
+      rowsHtml+=`<tr>
+        <td style="background:${bg};padding:5px 7px;color:#9ea0a3;font-size:9px;text-align:center">${rowNum++}</td>
+        <td style="background:${bg};padding:5px 7px;color:#3f3f40;font-size:9px">${r.date}</td>
+        <td style="background:${bg};padding:5px 7px;font-weight:600;color:#1a1a1a;font-size:9px">${r.name}</td>
+        <td style="background:${bg};padding:5px 7px;color:#9ea0a3;font-size:8px">${r.team}</td>
+        <td style="background:${bg};padding:5px 7px;color:#3f3f40;font-size:9px">${r.item}</td>
+        <td style="background:${bg};padding:5px 7px;text-align:center;color:#3f3f40;font-size:9px">${r.size||'—'}</td>
+        <td style="background:${bg};padding:5px 7px;text-align:center;font-weight:700;font-size:10px">${r.qty}</td>
+        <td style="background:${bg};padding:5px 7px;text-align:center">${sigHtml}</td>
       </tr>`;
     });
-    rowsHtml += `<tr>
-      <td colspan="6" style="background:#fffde6;border-top:2px solid #fddd00;padding:5px 12px;
-        font-family:Calibri;font-size:9pt;color:#a06000;font-style:italic">
-        Subtotal — ${new Date(d+'T12:00:00').toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'})}
-      </td>
-      <td style="background:#fffde6;border-top:2px solid #fddd00;padding:5px 10px;text-align:center;
-        font-weight:700;font-family:Calibri;font-size:10pt;color:#a06000">${dayTotal}</td>
-      <td colspan="2" style="background:#fffde6;border-top:2px solid #fddd00"></td>
+    rowsHtml+=`<tr>
+      <td colspan="6" style="background:#fffde6;border-top:2px solid #fddd00;padding:4px 12px;font-size:8px;color:#a06000;font-style:italic">Subtotal — ${new Date(d+'T12:00:00').toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'})}</td>
+      <td style="background:#fffde6;border-top:2px solid #fddd00;padding:4px 8px;text-align:center;font-weight:700;font-size:10px;color:#a06000">${dayTotal}</td>
+      <td style="background:#fffde6;border-top:2px solid #fddd00"></td>
     </tr>`;
   });
-
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f4f3f0">
-<table style="width:100%;border-collapse:collapse;background:#2a2a2a"><tr>
-  <td style="padding:16px 24px;vertical-align:middle">
-    <div style="display:inline-block;width:4px;height:50px;background:#fddd00;vertical-align:middle;margin-right:14px"></div>
-    <span style="font-family:Calibri,sans-serif;font-size:22pt;font-weight:700;color:#fff;letter-spacing:2px;vertical-align:middle">
-      <span style="color:#9ea0a3;font-weight:400">RHINO</span>ENERGY
-    </span>
-    <div style="margin-left:18px;font-size:8pt;color:#fddd00;letter-spacing:3px;margin-top:2px">PPE MANAGEMENT SYSTEM</div>
-  </td>
-  <td style="padding:16px 24px;text-align:right;vertical-align:middle">
-    <div style="font-size:17pt;font-weight:700;color:#fddd00;letter-spacing:1px">PPE SIGN-OUT LOG</div>
-    <div style="font-size:9pt;color:#9ea0a3;margin-top:4px">Generated: ${dateStr} at ${timeStr}</div>
-    ${team?`<div style="font-size:9pt;color:#9ea0a3">Team filter: ${team}</div>`:''}
-    ${date?`<div style="font-size:9pt;color:#9ea0a3">Date filter: ${date}</div>`:''}
-  </td>
-</tr><tr><td colspan="2" style="height:4px;background:#fddd00;padding:0"></td></tr></table>
-
-<table style="width:100%;border-collapse:collapse;background:#3f3f40"><tr>
-  <td style="padding:10px 24px;color:rgba(255,255,255,0.45);font-size:9pt;font-family:Calibri">
-    TOTAL RECORDS:&nbsp;<strong style="color:#fddd00;font-size:13pt">${filtered.length}</strong>
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-    TOTAL UNITS ISSUED:&nbsp;<strong style="color:#fddd00;font-size:13pt">${grandTotal}</strong>
-    &nbsp;&nbsp;|&nbsp;&nbsp;
-    PERIOD:&nbsp;<strong style="color:rgba(255,255,255,0.75);font-size:9pt">${sortedDates.length>0?sortedDates[sortedDates.length-1]+' to '+sortedDates[0]:'—'}</strong>
-  </td>
-</tr></table>
-
-<div style="padding:16px 16px 24px">
-<table style="width:100%;border-collapse:collapse;border:1px solid #e0ddd6;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
-  <thead><tr style="background:#3f3f40">
-    <th style="padding:9px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;letter-spacing:1px;font-weight:700;text-align:center;width:4%">#</th>
-    <th style="padding:9px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;letter-spacing:1px;font-weight:700;text-align:left;width:9%">DATE</th>
-    <th style="padding:9px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;letter-spacing:1px;font-weight:700;text-align:left;width:15%">NAME</th>
-    <th style="padding:9px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;letter-spacing:1px;font-weight:700;text-align:left;width:14%">TEAM</th>
-    <th style="padding:9px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;letter-spacing:1px;font-weight:700;text-align:left;width:20%">ITEM</th>
-    <th style="padding:9px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;letter-spacing:1px;font-weight:700;text-align:center;width:7%">SIZE</th>
-    <th style="padding:9px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;letter-spacing:1px;font-weight:700;text-align:center;width:6%">QTY</th>
-    <th style="padding:9px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;letter-spacing:1px;font-weight:700;text-align:left;width:12%">SITE</th>
-    <th style="padding:9px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;letter-spacing:1px;font-weight:700;text-align:center;width:13%">SIGNATURE</th>
-  </tr></thead>
-  <tbody>${rowsHtml}</tbody>
-  <tfoot><tr>
-    <td colspan="6" style="background:#2a2a2a;padding:10px 12px;font-family:Calibri;font-size:10pt;
-      font-weight:700;color:#9ea0a3;letter-spacing:1px">GRAND TOTAL</td>
-    <td style="background:#2a2a2a;padding:10px 10px;text-align:center;font-family:Calibri;
-      font-size:15pt;font-weight:700;color:#fddd00">${grandTotal}</td>
-    <td colspan="2" style="background:#2a2a2a"></td>
-  </tr></tfoot>
-</table></div>
-
-<table style="width:100%;border-collapse:collapse;background:#2a2a2a">
-  <tr><td style="height:3px;background:#fddd00;padding:0"></td></tr>
-  <tr><td style="padding:10px 24px;color:rgba(255,255,255,0.2);font-size:8pt;font-family:Calibri;
-    letter-spacing:1px;text-align:center">
-    RHINO ENERGY SOLUTIONS &nbsp;·&nbsp; SOLAR. ENERGY. EXCELLENCE. &nbsp;·&nbsp; PPE Management System &nbsp;·&nbsp; ${dateStr}
-  </td></tr>
-</table>
-</body></html>`;
-
-  const blob = new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
+  const reportHtml=`<div id="res-pdf-log" style="width:740px;font-family:Arial,sans-serif;background:#f4f3f0">
+    <div style="background:#2a2a2a"><div style="height:4px;background:#fddd00"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:4px;height:46px;background:#fddd00;border-radius:2px"></div>
+        <div><div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:2px;line-height:1"><span style="color:#9ea0a3;font-weight:400">RHINO</span>ENERGY</div>
+        <div style="font-size:7px;color:#fddd00;letter-spacing:3px;margin-top:3px">PPE MANAGEMENT SYSTEM</div></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:700;color:#fddd00;letter-spacing:1px">PPE SIGN-OUT LOG</div>
+        <div style="font-size:8px;color:#9ea0a3;margin-top:3px">${dateStr} at ${timeStr}</div>
+        ${teamF?`<div style="font-size:8px;color:#9ea0a3">Team: ${teamF}</div>`:''}
+        ${dateF?`<div style="font-size:8px;color:#9ea0a3">Date: ${dateF}</div>`:''}
+      </div>
+    </div></div>
+    <div style="background:#3f3f40;padding:8px 20px;display:flex;gap:20px">
+      <span style="color:rgba(255,255,255,0.4);font-size:8px;letter-spacing:1px">RECORDS <strong style="color:#fddd00;font-size:14px">${filtered.length}</strong></span>
+      <span style="color:rgba(255,255,255,0.2)">|</span>
+      <span style="color:rgba(255,255,255,0.4);font-size:8px;letter-spacing:1px">UNITS ISSUED <strong style="color:#fddd00;font-size:14px">${grandTotal}</strong></span>
+      <span style="color:rgba(255,255,255,0.2)">|</span>
+      <span style="color:rgba(255,255,255,0.4);font-size:8px;letter-spacing:1px">PERIOD <strong style="color:rgba(255,255,255,0.75);font-size:8px">${period}</strong></span>
+    </div>
+    <div style="padding:12px">
+    <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif">
+      <thead><tr style="background:#3f3f40">
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:center;width:4%">#</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:left;width:9%">DATE</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:left;width:16%">NAME</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:left;width:16%">TEAM</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:left;width:20%">ITEM</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:center;width:7%">SIZE</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:center;width:6%">QTY</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:center;width:12%">SIGNATURE</th>
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+      <tfoot><tr>
+        <td colspan="6" style="background:#2a2a2a;padding:8px 12px;font-size:9px;font-weight:700;color:#9ea0a3;letter-spacing:1px">GRAND TOTAL</td>
+        <td style="background:#2a2a2a;padding:8px;text-align:center;font-size:14px;font-weight:700;color:#fddd00">${grandTotal}</td>
+        <td style="background:#2a2a2a"></td>
+      </tr></tfoot>
+    </table></div>
+    <div style="background:#2a2a2a"><div style="height:3px;background:#fddd00"></div>
+    <div style="padding:8px 20px;text-align:center;color:rgba(255,255,255,0.2);font-size:7px;letter-spacing:1.5px">
+      RHINO ENERGY SOLUTIONS · SOLAR. ENERGY. EXCELLENCE. · PPE MANAGEMENT SYSTEM · ${dateStr}
+    </div></div>
+  </div>`;
+  _generatePDF(reportHtml,'res-pdf-log','RES_PPE_SignOut_Log_'+now.toISOString().split('T')[0]+'.pdf');
 }
 function exportReorder(){
-  const low = getLow();
-  if(!low.length){ alert('No items flagged for reorder.'); return; }
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('en-ZA',{day:'2-digit',month:'long',year:'numeric'});
-
-  let rowsHtml = '';
-  let rowNum = 1;
-  const cats = [...new Set(low.map(s=>s.cat))];
-
-  cats.forEach(cat => {
-    const catItems = low.filter(s=>s.cat===cat);
-    rowsHtml += `<tr>
-      <td colspan="6" style="background:#3f3f40;color:#fddd00;font-weight:700;font-size:10pt;
-        padding:6px 10px;font-family:Calibri,sans-serif;letter-spacing:0.05em">${cat.toUpperCase()}</td>
-    </tr>`;
+  const low=getLow();
+  if(!low.length){alert('No items flagged for reorder.');return;}
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('en-ZA',{day:'2-digit',month:'long',year:'numeric'});
+  const cats=[...new Set(low.map(s=>s.cat))];
+  let rowsHtml=''; let rowNum=1;
+  cats.forEach(cat=>{
+    const catItems=low.filter(s=>s.cat===cat);
+    rowsHtml+=`<tr><td colspan="6" style="background:#3f3f40;color:#fddd00;font-weight:700;font-size:10px;padding:6px 12px;letter-spacing:1px">${cat.toUpperCase()}</td></tr>`;
     catItems.forEach((s,i)=>{
-      const t = thresholds[s.n]||12;
-      const deficit = Math.max(0,t-s.qty);
-      const suggest = t+deficit;
-      const bg = i%2===0?'#ffffff':'#f9f8f5';
-      const critColor = s.qty<=t*0.4?'#c0392b':'#e67e22';
-      rowsHtml += `<tr>
-        <td style="background:${bg};padding:6px 10px;color:#3f3f40;font-family:Calibri;font-size:10pt">${rowNum++}</td>
-        <td style="background:${bg};padding:6px 10px;font-weight:600;color:#1a1a1a;font-family:Calibri;font-size:10pt">${s.n}</td>
-        <td style="background:${bg};padding:6px 10px;text-align:center;font-weight:700;color:${critColor};font-family:Calibri;font-size:10pt">${s.qty}</td>
-        <td style="background:${bg};padding:6px 10px;text-align:center;color:#3f3f40;font-family:Calibri;font-size:10pt">${t}</td>
-        <td style="background:${bg};padding:6px 10px;text-align:center;font-weight:700;color:#c0392b;font-family:Calibri;font-size:10pt">+${deficit}</td>
-        <td style="background:${bg};padding:6px 10px;text-align:center;font-weight:700;color:#27ae60;font-family:Calibri;font-size:11pt">${suggest}</td>
+      const t=thresholds[s.n]||12;
+      const deficit=Math.max(0,t-s.qty);
+      const bg=i%2===0?'#ffffff':'#f9f8f5';
+      const qtyColor=s.qty<=t*0.4?'#c0392b':'#e67e22';
+      rowsHtml+=`<tr>
+        <td style="background:${bg};padding:6px 8px;color:#9ea0a3;font-size:9px;text-align:center">${rowNum++}</td>
+        <td style="background:${bg};padding:6px 8px;font-weight:600;color:#1a1a1a;font-size:9px">${s.n}</td>
+        <td style="background:${bg};padding:6px 8px;text-align:center;font-weight:700;color:${qtyColor};font-size:10px">${s.qty}</td>
+        <td style="background:${bg};padding:6px 8px;text-align:center;color:#3f3f40;font-size:9px">${t}</td>
+        <td style="background:${bg};padding:6px 8px;text-align:center;font-weight:700;color:#c0392b;font-size:10px">+${deficit}</td>
+        <td style="background:${bg};padding:6px 8px;text-align:center;font-weight:700;color:#27ae60;font-size:11px">${t+deficit}</td>
       </tr>`;
     });
   });
-
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>
-  <table style="width:100%;background:#2a2a2a;margin-bottom:0"><tr>
-    <td style="padding:14px 24px">
-      <div style="width:4px;height:44px;background:#fddd00;display:inline-block;vertical-align:middle;margin-right:12px"></div>
-      <span style="font-family:Calibri;font-size:18pt;font-weight:700;color:#fff;letter-spacing:2px">
-        <span style="color:#9ea0a3;font-weight:400">RHINO</span>ENERGY</span>
-      <div style="font-size:8pt;color:#fddd00;letter-spacing:3px;margin-left:18px">PPE MANAGEMENT SYSTEM</div>
-    </td>
-    <td style="padding:14px 24px;text-align:right;vertical-align:middle">
-      <div style="font-size:15pt;font-weight:700;color:#fddd00">REORDER LIST</div>
-      <div style="font-size:9pt;color:#9ea0a3">${dateStr}</div>
-    </td>
-  </tr><tr><td colspan="2" style="height:4px;background:#fddd00;padding:0"></td></tr></table>
-  <table style="width:100%;background:#3f3f40;margin-bottom:16px"><tr>
-    <td style="padding:10px 24px;color:rgba(255,255,255,0.5);font-size:9pt;font-family:Calibri">
-      ITEMS TO REORDER: <strong style="color:#fddd00;font-size:12pt">${low.length}</strong>
-    </td>
-  </tr></table>
-  <div style="padding:0 16px 24px">
-  <table style="width:100%;border:1px solid #e0ddd6;border-collapse:collapse">
-    <thead><tr style="background:#3f3f40">
-      <th style="padding:8px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;text-align:left;letter-spacing:1px;width:5%">#</th>
-      <th style="padding:8px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;text-align:left;letter-spacing:1px;width:35%">ITEM</th>
-      <th style="padding:8px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;text-align:center;letter-spacing:1px;width:15%">IN STOCK</th>
-      <th style="padding:8px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;text-align:center;letter-spacing:1px;width:15%">MINIMUM</th>
-      <th style="padding:8px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;text-align:center;letter-spacing:1px;width:15%">DEFICIT</th>
-      <th style="padding:8px 10px;color:#fddd00;font-family:Calibri;font-size:9pt;text-align:center;letter-spacing:1px;width:15%">ORDER QTY</th>
-    </tr></thead>
-    <tbody>${rowsHtml}</tbody>
-  </table></div>
-  <table style="width:100%;background:#2a2a2a"><tr><td style="height:3px;background:#fddd00;padding:0"></td></tr>
-  <tr><td style="padding:8px 24px;color:rgba(255,255,255,0.25);font-size:8pt;font-family:Calibri;text-align:center;letter-spacing:1px">
-    RHINO ENERGY SOLUTIONS · SOLAR. ENERGY. EXCELLENCE. · ${dateStr}
-  </td></tr></table>
-  </body></html>`;
-
-  const blob = new Blob([html],{type:'application/vnd.ms-excel;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `RES_Reorder_List_${new Date().toISOString().split('T')[0]}.xls`;
-  a.click();
+  const reportHtml=`<div id="res-pdf-reorder" style="width:740px;font-family:Arial,sans-serif;background:#f4f3f0">
+    <div style="background:#2a2a2a"><div style="height:4px;background:#fddd00"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:4px;height:46px;background:#fddd00;border-radius:2px"></div>
+        <div><div style="font-size:20px;font-weight:700;color:#fff;letter-spacing:2px;line-height:1"><span style="color:#9ea0a3;font-weight:400">RHINO</span>ENERGY</div>
+        <div style="font-size:7px;color:#fddd00;letter-spacing:3px;margin-top:3px">PPE MANAGEMENT SYSTEM</div></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:700;color:#fddd00;letter-spacing:1px">REORDER LIST</div>
+        <div style="font-size:8px;color:#9ea0a3;margin-top:3px">${dateStr}</div>
+      </div>
+    </div></div>
+    <div style="background:#3f3f40;padding:8px 20px">
+      <span style="color:rgba(255,255,255,0.4);font-size:8px;letter-spacing:1px">ITEMS TO REORDER <strong style="color:#fddd00;font-size:14px">${low.length}</strong></span>
+    </div>
+    <div style="padding:12px">
+    <table style="width:100%;border-collapse:collapse;font-family:Arial,sans-serif">
+      <thead><tr style="background:#3f3f40">
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:center;width:5%">#</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:left;width:35%">ITEM</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:center;width:15%">IN STOCK</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:center;width:15%">MINIMUM</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:center;width:15%">DEFICIT</th>
+        <th style="padding:7px 8px;color:#fddd00;font-size:8px;letter-spacing:1px;text-align:center;width:15%">ORDER QTY</th>
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table></div>
+    <div style="background:#2a2a2a"><div style="height:3px;background:#fddd00"></div>
+    <div style="padding:8px 20px;text-align:center;color:rgba(255,255,255,0.2);font-size:7px;letter-spacing:1.5px">
+      RHINO ENERGY SOLUTIONS · SOLAR. ENERGY. EXCELLENCE. · ${dateStr}
+    </div></div>
+  </div>`;
+  _generatePDF(reportHtml,'res-pdf-reorder','RES_Reorder_List_'+now.toISOString().split('T')[0]+'.pdf');
 }
 const now=new Date();
 document.getElementById('hdr-date').textContent=now.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
