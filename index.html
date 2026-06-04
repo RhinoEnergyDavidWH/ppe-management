@@ -697,7 +697,18 @@ function sigIsEmpty(){
   return !sigHasSig;
 }
 // ────────────────────────────────────────────────────────────
-function renderPPEForm(){document.getElementById('ppe-form-list').innerHTML=PPE_ITEMS.map(item=>{const k=item.replace(/\s/g,'_');return`<div class="ppe-row"><span class="ppe-name">${item}</span><input type="text" placeholder="M / 30 / 9" id="sz-${k}"><input type="number" placeholder="0" id="qt-${k}" min="0"></div>`;}).join('');}
+function renderPPEForm(){
+  document.getElementById('ppe-form-list').innerHTML=PPE_ITEMS.map(item=>{
+    const k=item.replace(/\s/g,'_');
+    return`<div class="ppe-row" id="row-${k}">
+      <span class="ppe-name" id="pname-${k}">${item}</span>
+      <input type="text" placeholder="M / 30 / 9" id="sz-${k}"
+        oninput="checkRowWarning('${item}','${k}')">
+      <input type="number" placeholder="0" id="qt-${k}" min="0"
+        oninput="checkRowWarning('${item}','${k}')">
+    </div>`;
+  }).join('');
+}
 
 
 // Store original team PPE counts to detect session changes
@@ -1092,19 +1103,27 @@ function updateDashLog(){const el=document.getElementById('dash-log');if(!signou
 
 
 // ── Duplicate sign-out warning system ─────────────────────────────────────
-const WARN_DAYS = 30; // warn if same item signed out within this many days
+let WARN_DAYS = 30; // warn if same item signed out within this many days — adjustable
 
 function daysBetween(dateStr1, dateStr2){
-  // dateStr format: YYYY-MM-DD or DD/MM/YYYY
   function parseDate(s){
     if(!s) return null;
-    if(s.includes('-')) return new Date(s);
-    const [d,m,y] = s.split('/');
-    return new Date(`${y}-${m}-${d}`);
+    s = s.trim();
+    // YYYY-MM-DD or YYYY/MM/DD
+    if(/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}/.test(s)){
+      return new Date(s.replace(/\//g,'-').split('T')[0]);
+    }
+    // DD/MM/YYYY or DD-MM-YYYY
+    if(/^\d{1,2}[-\/]\d{1,2}[-\/]\d{4}/.test(s)){
+      const sep = s.includes('/') ? '/' : '-';
+      const [d,m,y] = s.split(sep);
+      return new Date(`${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+    }
+    return new Date(s); // fallback
   }
   const d1 = parseDate(dateStr1);
   const d2 = parseDate(dateStr2);
-  if(!d1||!d2) return 999;
+  if(!d1||!d2||isNaN(d1)||isNaN(d2)) return 999;
   return Math.abs((d2-d1)/(1000*60*60*24));
 }
 
@@ -1137,10 +1156,9 @@ function checkRowWarning(itemName, k){
 }
 
 function checkDuplicateSignouts(memberName, teamName, items){
-  // items = [{item, size, qty}]
-  // Returns array of warnings: [{item, size, qty, prevDate, prevSite, prevQty, days}]
   if(!memberName || !items.length) return [];
   const cleanName = memberName.replace(/\s*\(\w+\)\s*$/, '').trim().toLowerCase();
+  console.log('[DupCheck] checking', cleanName, 'items:', items.map(i=>i.item), '| signouts loaded:', signouts.length);
   const today = new Date().toISOString().split('T')[0];
   const warnings = [];
 
@@ -1152,7 +1170,7 @@ function checkDuplicateSignouts(memberName, teamName, items){
       const sName = s.name.replace(/\s*\(\w+\)\s*$/, '').trim().toLowerCase();
       const sItem = s.item.toLowerCase();
       return (sName === cleanName || s.name.toLowerCase() === cleanName) &&
-             (sItem === itemLower || sItem.includes(itemLower.split(' ')[0])) &&
+             (sItem === itemLower || sItem.startsWith(itemLower) || itemLower.startsWith(sItem.split(' ').slice(0,2).join(' '))) &&
              daysBetween(s.date, today) <= WARN_DAYS;
     });
     if(recent.length > 0){
