@@ -178,6 +178,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
 .warn-modal-footer{padding:12px 18px;border-top:1px solid var(--border);
   display:flex;gap:8px;justify-content:flex-end;background:#f9f8f5}
 
+
+.site-log-badge{display:inline-block;background:#e8f0fb;color:#185fa5;font-size:9px;
+  padding:1px 6px;border-radius:10px;font-family:'Barlow Condensed',sans-serif;
+  font-weight:700;letter-spacing:0.04em;margin-left:4px;vertical-align:middle}
+
 </style>
 
   <!-- PDF Export Libraries -->
@@ -431,13 +436,36 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       <div class="content">
         <div class="card"><div class="card-header"><span class="card-title">Team member details</span></div>
           <div class="form-grid">
-            <div class="form-group"><label>Team</label><select id="so-team" onchange="updateMembers()"><option value="">Select team...</option><option>Team 1 — KG</option><option>Team 2 — Thulani</option><option>Team 3 — Sipho</option><option>Team 4 — Frans</option><option>Team 5 — Jacques</option><option>Team 6 — Justinos</option><option>Team 7 — Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option></select></div>
-            <div class="form-group"><label>Name</label><select id="so-name"><option value="">Select team first...</option></select></div>
+            <div class="form-group"><label>Team</label><select id="so-team" onchange="onTeamChange()"><option value="">Select team...</option><option>Team 1 — KG</option><option>Team 2 — Thulani</option><option>Team 3 — Sipho</option><option>Team 4 — Frans</option><option>Team 5 — Jacques</option><option>Team 6 — Justinos</option><option>Team 7 — Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option disabled style="color:var(--border)">──────────</option><option value="Site">📍 Site sign-out</option></select></div>
+            <div class="form-group" id="name-group-member">
+              <label>Name</label>
+              <select id="so-name"><option value="">Select team first...</option></select>
+            </div>
+            <div class="form-group" id="name-group-site" style="display:none">
+              <label>Site name</label>
+              <div style="display:flex;gap:6px">
+                <select id="so-site-name" style="flex:1" onchange="onSiteNameChange(this.value)">
+                  <option value="">Select site or add new...</option>
+                </select>
+                <button class="btn" onclick="promptNewSite()" type="button"
+                  style="flex-shrink:0;white-space:nowrap;padding:0 10px" title="Add new site">
+                  + New
+                </button>
+              </div>
+            </div>
             <div class="form-group"><label>Date</label><input type="date" id="so-date"></div>
             <div class="form-group"><label>Location / site</label><input type="text" id="so-site" placeholder="e.g. Pretoria Warehouse"></div>
           </div>
         </div>
-        <div class="card"><div class="card-header"><span class="card-title">PPE items issued</span><span style="font-size:11px;color:var(--grey)">Fill size & qty only for items being issued</span></div>
+        <div class="card"><div class="card-header">
+            <span class="card-title">PPE items issued</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="signout-mode-badge" style="display:none;background:#e8f0fb;color:#185fa5;
+                font-size:10px;padding:2px 8px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;
+                font-weight:700;letter-spacing:0.04em">📍 SITE SIGN-OUT</span>
+              <span style="font-size:11px;color:var(--grey)">Fill size & qty only for items being issued</span>
+            </div>
+          </div>
           <div style="display:grid;grid-template-columns:2fr 85px 75px;gap:6px;padding:5px 0;border-bottom:2px solid var(--border)"><span style="font-size:10px;color:var(--grey);font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em">Item</span><span style="font-size:10px;color:var(--grey);font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em">Size</span><span style="font-size:10px;color:var(--grey);font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.08em">Qty</span></div>
           <div class="ppe-list" id="ppe-form-list"></div>
         </div>
@@ -494,7 +522,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
     </div>
     <div class="page" id="page-log">
       <div class="topbar"><h1>Sign-out log</h1><div class="topbar-actions"><button class="btn btn-dark" onclick="exportLog()">&#8659; Export PDF</button></div></div>
-      <div class="content"><div class="filter-row"><input type="text" placeholder="Search name or item..." id="log-search" oninput="renderLog()"><select id="log-team" onchange="renderLog()"><option value="">All teams</option><option>Team 1 — KG</option><option>Team 2 — Thulani</option><option>Team 3 — Sipho</option><option>Team 4 — Frans</option><option>Team 5 — Jacques</option><option>Team 6 — Justinos</option><option>Team 7 — Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option></select><input type="date" id="log-date" onchange="renderLog()" style="max-width:150px"></div>
+      <div class="content"><div class="filter-row"><input type="text" placeholder="Search name or item..." id="log-search" oninput="renderLog()"><select id="log-team" onchange="renderLog()"><option value="">All teams</option><option>Team 1 — KG</option><option>Team 2 — Thulani</option><option>Team 3 — Sipho</option><option>Team 4 — Frans</option><option>Team 5 — Jacques</option><option>Team 6 — Justinos</option><option>Team 7 — Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option value="Site">📍 Site sign-outs</option></select><input type="date" id="log-date" onchange="renderLog()" style="max-width:150px"></div>
         <div class="card" style="padding:0;overflow:hidden"><table><thead><tr><th style="width:12%">Date</th><th style="width:18%">Name</th><th style="width:14%">Team</th><th style="width:20%">Item</th><th style="width:8%">Size</th><th style="width:6%">Qty</th><th style="width:10%">Site</th><th style="width:12%">Signature</th></tr></thead><tbody id="log-tbody"><tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr></tbody></table></div>
       </div>
     </div>
@@ -923,7 +951,8 @@ function submitSignout(){
   if(_submitting) return;
   _submitting = true;
   setTimeout(()=>{ _submitting=false; }, 3000); // reset after 3s
-  const name=document.getElementById('so-name').value;const team=document.getElementById('so-team').value;const date=document.getElementById('so-date').value||new Date().toISOString().split('T')[0];const site=document.getElementById('so-site').value||'Warehouse';if(!name||!team){alert('Please select a team and team member.');return;}const items=[];PPE_ITEMS.forEach(item=>{const k=item.replace(/\s/g,'_');const sz=document.getElementById('sz-'+k)?.value;const qt=parseInt(document.getElementById('qt-'+k)?.value||0);if(qt>0)items.push({item,size:sz||'—',qty:qt});});if(items.length===0){alert('Please enter at least one PPE item with a quantity.');return;}if(sigIsEmpty()){
+  const name=document.getElementById('so-name').value;const team=document.getElementById('so-team').value;const date=document.getElementById('so-date').value||new Date().toISOString().split('T')[0];const site=document.getElementById('so-site').value||'Warehouse';if(!team){alert('Please select a team or site.');return;}
+  if(!name){alert(isSiteMode()?'Please select or add a site name.':'Please select a team member.');return;}const items=[];PPE_ITEMS.forEach(item=>{const k=item.replace(/\s/g,'_');const sz=document.getElementById('sz-'+k)?.value;const qt=parseInt(document.getElementById('qt-'+k)?.value||0);if(qt>0)items.push({item,size:sz||'—',qty:qt});});if(items.length===0){alert('Please enter at least one PPE item with a quantity.');return;}if(sigIsEmpty()){
     document.getElementById('sig-required').classList.add('show');
     document.getElementById('sig-canvas').scrollIntoView({behavior:'smooth',block:'center'});
     return;
@@ -1053,7 +1082,7 @@ function renderTeamPPE(){
   container.innerHTML = html || '<div style="color:var(--grey);padding:20px;text-align:center">No data available.</div>';
 }
 
-function renderLog(){const s=(document.getElementById('log-search')?.value||'').toLowerCase();const t=document.getElementById('log-team')?.value||'';const d=document.getElementById('log-date')?.value||'';const f=signouts.filter(r=>(!s||r.name.toLowerCase().includes(s)||r.item.toLowerCase().includes(s))&&(!t||r.team===t)&&(!d||r.date===d));const tbody=document.getElementById('log-tbody');if(!f.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr>';return;}tbody.innerHTML=f.slice().reverse().map(r=>`<tr><td>${r.date}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar">${r.name.substring(0,2).toUpperCase()}</div>${r.name}</div></td><td style="color:var(--grey)">${r.team}</td><td>${r.item}</td><td>${r.size}</td><td style="font-weight:700">${r.qty}</td><td>${r.sig?`<img src="${r.sig}" style="height:32px;max-width:80px;border:1px solid var(--border);border-radius:3px;background:#fff;display:block" title="Signature">`:'<span style="color:var(--red);font-size:10px">No sig</span>'}</td></tr>`).join('');}
+function renderLog(){const s=(document.getElementById('log-search')?.value||'').toLowerCase();const t=document.getElementById('log-team')?.value||'';const d=document.getElementById('log-date')?.value||'';const f=signouts.filter(r=>(!s||r.name.toLowerCase().includes(s)||r.item.toLowerCase().includes(s))&&(!t||r.team===t)&&(!d||r.date===d));const tbody=document.getElementById('log-tbody');if(!f.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr>';return;}tbody.innerHTML=f.slice().reverse().map(r=>`<tr><td>${r.date}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="background:${r.team==='Site'?'#e8f0fb':'var(--yellow)'};color:${r.team==='Site'?'#185fa5':'var(--dark)'}">${r.team==='Site'?'📍':r.name.substring(0,2).toUpperCase()}</div>${r.name}${r.team==='Site'?'<span class="site-log-badge">SITE</span>':''}</div></td><td style="color:var(--grey)">${r.team==='Site'?r.site||'—':r.team}</td><td>${r.item}</td><td>${r.size}</td><td style="font-weight:700">${r.qty}</td><td>${r.sig?`<img src="${r.sig}" style="height:32px;max-width:80px;border:1px solid var(--border);border-radius:3px;background:#fff;display:block" title="Signature">`:'<span style="color:var(--red);font-size:10px">No sig</span>'}</td></tr>`).join('');}
 
 function setThreshold(itemName, val){
   const v = Math.max(1, parseInt(val)||1);
@@ -1104,6 +1133,78 @@ function updateReorderBadge(){const c=getLow().length;const b=document.getElemen
 function renderDashboard(){const low=getLow();document.getElementById('dash-alert-banner').innerHTML=low.length>0?`<div class="notice notice-warn">&#9888; ${low.length} PPE item${low.length>1?'s':''} need reordering. <button class="btn btn-sm" onclick="nav(null,'reorder')" style="margin-left:8px">View</button></div>`:'';document.getElementById('dash-reorder-badge').textContent=low.length>0?low.length+' items':'All OK';document.getElementById('dash-reorder-badge').className='badge '+(low.length>0?'b-danger':'b-ok');document.getElementById('dash-reorder-list').innerHTML=low.length===0?'<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">&#10003; All stock levels OK</div>':low.slice(0,5).map(s=>`<div class="log-row"><div class="log-dot" style="background:${s.qty<=(thresholds[s.n]||12)*0.4?'var(--red)':'var(--orange)'}"></div><div><div class="log-text"><strong>${s.n}</strong> — ${s.qty} remaining</div><div class="log-time">Min: ${thresholds[s.n]||12} · Suggest ordering ${(thresholds[s.n]||12)*2-s.qty} units</div></div></div>`).join('');updateDashLog();const cats=[...new Set(STOCK.map(s=>s.cat))];document.getElementById('stock-overview').innerHTML=cats.map(cat=>{const items=STOCK.filter(s=>s.cat===cat);const total=items.reduce((a,b)=>a+b.qty,0);const nlow=items.filter(s=>s.qty<=(thresholds[s.n]||12)).length;const cls=nlow>0?(nlow>=items.length*0.5?'ov-low':'ov-warn'):'ov-ok';return`<div class="ov-card ${cls}"><div class="ov-label">${cat}</div><div class="ov-val">${total}</div><div class="ov-sub">${items.length} variants${nlow>0?` · <span style="color:var(--red)">${nlow} low</span>`:' · All OK'}</div></div>`;}).join('');}
 function updateDashLog(){const el=document.getElementById('dash-log');if(!signouts.length){el.innerHTML='<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">No sign-outs yet.</div>';return;}el.innerHTML=signouts.slice(-4).reverse().map(s=>`<div class="log-row"><div class="log-dot" style="background:var(--red)"></div><div><div class="log-text">${s.item} — ${s.name}</div><div class="log-time">${s.date} · ${s.team} · ${s.site}</div></div></div>`).join('');}
 
+
+
+// ── Site sign-out management ───────────────────────────────────────────────
+let savedSites = [
+  'Installations', 'RES Warehouse', 'Pretoria site',
+  'Johannesburg site', 'Cape Town site'
+];
+
+function loadSavedSites(){
+  // Load from localStorage for persistence across sessions
+  try {
+    const stored = localStorage.getItem('res_saved_sites');
+    if(stored) savedSites = JSON.parse(stored);
+  } catch(e){}
+}
+
+function saveSitesToStorage(){
+  try { localStorage.setItem('res_saved_sites', JSON.stringify(savedSites)); } catch(e){}
+}
+
+function renderSiteDropdown(){
+  const sel = document.getElementById('so-site-name');
+  if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Select site or add new...</option>' +
+    savedSites.map(s => `<option value="${s}"${s===current?' selected':''}>${s}</option>`).join('');
+}
+
+function onSiteNameChange(val){
+  // Nothing extra needed — value is used on submit
+}
+
+function promptNewSite(){
+  const name = prompt('Enter the new site name:');
+  if(!name || !name.trim()) return;
+  const trimmed = name.trim();
+  if(!savedSites.includes(trimmed)){
+    savedSites.unshift(trimmed); // add to top
+    saveSitesToStorage();
+    renderSiteDropdown();
+  }
+  // Select it
+  const sel = document.getElementById('so-site-name');
+  if(sel) sel.value = trimmed;
+}
+
+function isSiteMode(){
+  return document.getElementById('so-team')?.value === 'Site';
+}
+
+function onTeamChange(){
+  updateMembers();
+  const siteMode = isSiteMode();
+  // Toggle member vs site name fields
+  document.getElementById('name-group-member').style.display = siteMode ? 'none' : '';
+  document.getElementById('name-group-site').style.display = siteMode ? '' : 'none';
+  // Toggle mode badge
+  const badge = document.getElementById('signout-mode-badge');
+  if(badge) badge.style.display = siteMode ? 'inline-block' : 'none';
+  // Pre-fill location field with "Site" hint
+  const siteInput = document.getElementById('so-site');
+  if(siteMode && siteInput && !siteInput.value){
+    siteInput.placeholder = 'e.g. Pretoria installations site';
+  }
+  if(siteMode) renderSiteDropdown();
+}
+
+function getSiteRecipientName(){
+  if(!isSiteMode()) return document.getElementById('so-name')?.value || '';
+  return document.getElementById('so-site-name')?.value || '';
+}
+// ──────────────────────────────────────────────────────────────────────────
 
 // ── Duplicate sign-out warning system ─────────────────────────────────────
 let WARN_DAYS = 30; // warn if same item signed out within this many days — adjustable
@@ -1603,7 +1704,7 @@ function exportReorder(){
 }
 const now=new Date();
 document.getElementById('hdr-date').textContent=now.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-renderPPEForm();renderDashboard();updateReorderBadge();setTimeout(initSigPad,100);initBaseline();initDB();window.addEventListener('resize',resizeSigCanvas);
+renderPPEForm();renderDashboard();updateReorderBadge();setTimeout(initSigPad,100);initBaseline();initDB();loadSavedSites();window.addEventListener('resize',resizeSigCanvas);
 document.getElementById('so-date').value=now.toISOString().split('T')[0];
 
 function toggleSidebar(){
