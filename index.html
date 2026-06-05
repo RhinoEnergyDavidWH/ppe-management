@@ -951,7 +951,11 @@ function submitSignout(){
   if(_submitting) return;
   _submitting = true;
   setTimeout(()=>{ _submitting=false; }, 3000); // reset after 3s
-  const name=document.getElementById('so-name').value;const team=document.getElementById('so-team').value;const date=document.getElementById('so-date').value||new Date().toISOString().split('T')[0];const site=document.getElementById('so-site').value||'Warehouse';if(!team){alert('Please select a team or site.');return;}
+  const team=document.getElementById('so-team').value;
+  const name=isSiteMode() ? (document.getElementById('so-site-name')?.value||'') : (document.getElementById('so-name')?.value||'');
+  const date=document.getElementById('so-date').value||new Date().toISOString().split('T')[0];
+  const site=document.getElementById('so-site').value||'Warehouse';
+  if(!team){alert('Please select a team or site.');return;}
   if(!name){alert(isSiteMode()?'Please select or add a site name.':'Please select a team member.');return;}const items=[];PPE_ITEMS.forEach(item=>{const k=item.replace(/\s/g,'_');const sz=document.getElementById('sz-'+k)?.value;const qt=parseInt(document.getElementById('qt-'+k)?.value||0);if(qt>0)items.push({item,size:sz||'—',qty:qt});});if(items.length===0){alert('Please enter at least one PPE item with a quantity.');return;}if(sigIsEmpty()){
     document.getElementById('sig-required').classList.add('show');
     document.getElementById('sig-canvas').scrollIntoView({behavior:'smooth',block:'center'});
