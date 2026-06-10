@@ -358,7 +358,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
             if(!MEMBERS[row.team]) MEMBERS[row.team] = [];
             if(!MEMBERS[row.team].includes(row.name)) MEMBERS[row.team].push(row.name);
           });
-          console.log('✓ Members loaded from Supabase');
+          console.log('✓ Members loaded from Supabase:', data.length, 'members');
+          // Refresh all dropdowns that use member lists
+          refreshSignoutDropdowns();
+          refreshAllTeamDropdowns();
+          if(document.getElementById('page-manage') &&
+             document.getElementById('page-manage').classList.contains('active')){
+            renderRoster();
+          }
         }
       } catch(e){ console.warn('loadMembersFromDB error:', e.message); }
     }
@@ -374,6 +381,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
           data.forEach(row => PPE_ITEMS.push(row.name));
           console.log('✓ PPE items loaded from Supabase:', PPE_ITEMS.length);
           renderPPEForm();
+          if(document.getElementById('page-manage') &&
+             document.getElementById('page-manage').classList.contains('active')){
+            renderPPEManageList();
+          }
         }
       } catch(e){ console.warn('loadPPEItemsFromDB error:', e.message); }
     }
@@ -875,7 +886,13 @@ let thresholds={};STOCK.forEach(s=>{
 });
 const MEMBERS={'Team 1 — KG':['Katlego (KB)','Alfred (AM)','Roberto (RS)','Michael (MS)','Dirk (DH)'],'Team 2 — Thulani':['Thulani (TM)','Andile (AM)','Erick (E)','Nangamso (NN)','Doctor (DM)'],'Team 3 — Sipho':['Sipho (SM)','Lizwi (LT)','Given (GM)','Sibusiso (SB)'],'Team 4 — Frans':['Frans (FM)','Simon M (SM)','Andy (AS)','Simon H (SH)','Richard (R)'],'Team 5 — Jacques':['Jacques (JJ)','Victor (VH)','Ishmael (IM)','Sihle (SM)','Nhlanhla (NS)'],'Team 6 — Justinos':['Justinos (JL)','Goodwill (GN)','Potego (PS)','Daniel (DN)','Siyabonga (SM)'],'Team 7 — Piet':['Piet (PL)','Themba (TN)','Emanuel (EN)','Alfred M (AM2)','Thembeka (TD)','Vincent (VL)'],'O&M Francois':['Francois (FB)','Johannes (JS)'],'O&M Steven':['Steven (SD)','Simphiwe (SS)'],'Students':['Admision (AN)','Phathutshebzo (PR)','Vanessa (VM)','Koketso (KM)','Bongani (BN)'],'Management / Warehouse':['William Jnr (WJ)','Jaco Joubert (JJ)','Cornelis Bezuidenhout (CB)','David Wilson (DW)']};
 let signouts=[];
-function nav(btn,page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');if(btn)btn.classList.add('active');if(page==='stock')renderStock();if(page==='teamppe')renderTeamPPE();if(page==='log')renderLog();if(page==='reorder')renderReorder();if(page==='dashboard')renderDashboard();if(page==='signout')setTimeout(initSigPad,80);if(page==='receive'){renderReceiveGrid();clearReceive();}if(page==='manage'){renderRoster();renderPPEManageList();}}
+function nav(btn,page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');if(btn)btn.classList.add('active');if(page==='stock')renderStock();if(page==='teamppe')renderTeamPPE();if(page==='log')renderLog();if(page==='reorder')renderReorder();if(page==='dashboard')renderDashboard();if(page==='signout')setTimeout(initSigPad,80);if(page==='receive'){renderReceiveGrid();clearReceive();}if(page==='manage'){
+    renderRoster();
+    renderPPEManageList();
+    // Reload fresh from DB when opening manage page
+    if(typeof loadMembersFromDB==='function') loadMembersFromDB();
+    if(typeof loadPPEItemsFromDB==='function') loadPPEItemsFromDB();
+  }}
 function updateMembers(){
   const t=document.getElementById('so-team').value;
   const s=document.getElementById('so-name');
@@ -1410,6 +1427,7 @@ function addMember(){
   if(!team){ alert('Please select a team.'); return; }
   const displayName = initials ? `${name} (${initials})` : name;
   if(!MEMBERS[team]) MEMBERS[team] = [];
+  if(!TEAM_PPE_DATA[team]) TEAM_PPE_DATA[team] = [];
   if(MEMBERS[team].includes(displayName)){
     alert(`${displayName} is already in ${team}.`); return;
   }
@@ -1428,6 +1446,8 @@ function addMember(){
   document.getElementById('mgmt-member-team').value='';
   renderRoster();
   refreshSignoutDropdowns();
+  // Reload from DB after short delay to confirm sync
+  setTimeout(()=>{ if(typeof loadMembersFromDB==='function') loadMembersFromDB(); }, 1000);
   alert(`✓ ${displayName} added to ${team}.`);
 }
 
@@ -1521,6 +1541,17 @@ function refreshSignoutDropdowns(){
   // Refresh the sign-out team member dropdown if a team is selected
   const currentTeam = document.getElementById('so-team')?.value;
   if(currentTeam && currentTeam !== 'Site') updateMembers();
+}
+
+function refreshAllTeamDropdowns(){
+  // Refresh the move-member dropdown in manage page if open
+  const fromTeam = document.getElementById('mgmt-from-team')?.value;
+  if(fromTeam) renderMoveMembers();
+  // Refresh roster view
+  if(typeof renderRoster === 'function' &&
+     document.getElementById('roster-content')){
+    renderRoster();
+  }
 }
 
 // ── PPE ITEM MANAGEMENT ────────────────────────────────────────────────────
