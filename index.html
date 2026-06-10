@@ -222,12 +222,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         DB_READY = true;
         syncStatus = 'online';
         setSyncIndicator('online');
+        console.log('✓ DB_READY, loading all data...');
         await loadAllFromDB();
         setupRealtimeSync();
         setupMembersRealtimeSync();
+        // Load members
+        console.log('Loading members from DB...');
         await loadMembersFromDB();
+        // Load PPE items
+        console.log('Loading PPE items from DB...');
         await loadPPEItemsFromDB();
-        console.log('✓ Supabase connected');
+        console.log('✓ All data loaded. MEMBERS teams:', Object.keys(MEMBERS));
+        console.log('✓ PPE_ITEMS count:', PPE_ITEMS.length);
+        // Force refresh all UI after everything is loaded
+        renderPPEForm();
+        refreshSignoutDropdowns();
+        refreshAllTeamDropdowns();
+        renderDashboard();
+        setSyncIndicator('online');
       } catch(e) {
         console.warn('Supabase not configured yet — running in local mode:', e.message);
         syncStatus = 'local';
@@ -352,12 +364,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         const { data, error } = await sb.from('members').select('*').eq('active', true).order('team').order('name');
         if(error) throw error;
         if(data && data.length > 0){
-          // Rebuild MEMBERS object from DB
-          Object.keys(MEMBERS).forEach(k => MEMBERS[k] = []);
+          // Rebuild MEMBERS object from DB — clear ALL teams first
+          const allTeamKeys = Object.keys(MEMBERS);
+          allTeamKeys.forEach(k => { MEMBERS[k] = []; });
           data.forEach(row => {
             if(!MEMBERS[row.team]) MEMBERS[row.team] = [];
             if(!MEMBERS[row.team].includes(row.name)) MEMBERS[row.team].push(row.name);
           });
+          // Save to localStorage as offline backup (only if data is valid)
+          if(data.length > 0) saveMembersToStorage();
           console.log('✓ Members loaded from Supabase:', data.length, 'members');
           // Refresh all dropdowns that use member lists
           refreshSignoutDropdowns();
@@ -1527,12 +1542,20 @@ function saveMembersToStorage(){
 }
 
 function loadMembersFromStorage(){
+  // Only use localStorage as fallback when Supabase is offline
+  if(DB_READY) return;
   try{
     const stored = localStorage.getItem('res_members');
     if(stored){
       const saved = JSON.parse(stored);
-      // Merge saved into MEMBERS (saved takes priority)
-      Object.keys(saved).forEach(team=>{ MEMBERS[team]=saved[team]; });
+      // Only restore if saved data has actual members (not empty arrays)
+      const hasData = Object.values(saved).some(arr => arr && arr.length > 0);
+      if(hasData){
+        Object.keys(saved).forEach(team=>{
+          if(saved[team] && saved[team].length > 0) MEMBERS[team] = saved[team];
+        });
+        console.log('✓ Members loaded from localStorage (offline mode)');
+      }
     }
   }catch(e){}
 }
@@ -1642,15 +1665,17 @@ function savePPEItemsToStorage(){
 }
 
 function loadPPEItemsFromStorage(){
+  // Only use localStorage as fallback when Supabase is offline
+  if(DB_READY) return;
   try{
     const stored = localStorage.getItem('res_ppe_items');
     if(stored){
       const saved = JSON.parse(stored);
-      // Add any new items not already in PPE_ITEMS
-      saved.forEach(item=>{ if(!PPE_ITEMS.includes(item)) PPE_ITEMS.push(item); });
-      // Remove any that were deleted
-      const toRemove = PPE_ITEMS.filter(item=>!saved.includes(item));
-      toRemove.forEach(item=>{ PPE_ITEMS.splice(PPE_ITEMS.indexOf(item),1); });
+      if(saved && saved.length > 0){
+        PPE_ITEMS.length = 0;
+        saved.forEach(item => PPE_ITEMS.push(item));
+        console.log('✓ PPE items loaded from localStorage (offline mode)');
+      }
     }
   }catch(e){}
 }
@@ -2225,7 +2250,8 @@ function exportReorder(){
 }
 const now=new Date();
 document.getElementById('hdr-date').textContent=now.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-loadMembersFromStorage();loadPPEItemsFromStorage();renderPPEForm();renderDashboard();updateReorderBadge();setTimeout(initSigPad,100);initBaseline();initDB();loadSavedSites();window.addEventListener('resize',resizeSigCanvas);
+// Members and PPE items load from Supabase via initDB()
+renderPPEForm();renderDashboard();updateReorderBadge();setTimeout(initSigPad,100);initBaseline();initDB();loadSavedSites();window.addEventListener('resize',resizeSigCanvas);
 document.getElementById('so-date').value=now.toISOString().split('T')[0];
 
 function toggleSidebar(){
