@@ -183,6 +183,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
   padding:1px 6px;border-radius:10px;font-family:'Barlow Condensed',sans-serif;
   font-weight:700;letter-spacing:0.04em;margin-left:4px;vertical-align:middle}
 
+
+.ppe-list-item{display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:12px}
+.ppe-list-item:nth-child(3n){border-right:none}
+.ppe-list-item:hover{background:var(--light)}
+.ppe-remove-btn{width:22px;height:22px;border-radius:50%;border:1px solid var(--border);
+  background:none;cursor:pointer;color:var(--red);font-size:14px;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.ppe-remove-btn:hover{background:#fdeaea;border-color:#f5c6c6}
+.roster-member{display:flex;align-items:center;justify-content:space-between;
+  padding:7px 12px;border-bottom:1px solid var(--border)}
+.roster-member:last-child{border-bottom:none}
+.roster-member:hover{background:var(--light)}
+
 </style>
 
   <!-- PDF Export Libraries -->
@@ -210,6 +224,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         setSyncIndicator('online');
         await loadAllFromDB();
         setupRealtimeSync();
+        setupMembersRealtimeSync();
+        await loadMembersFromDB();
+        await loadPPEItemsFromDB();
         console.log('✓ Supabase connected');
       } catch(e) {
         console.warn('Supabase not configured yet — running in local mode:', e.message);
@@ -325,6 +342,87 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
           items_json: JSON.stringify(delivery.items)
         });
       } catch(e){ console.error('saveDelivery error:', e); }
+    }
+
+
+    // ── LOAD members + PPE items from Supabase ────────────────────────
+    async function loadMembersFromDB(){
+      if(!DB_READY) return;
+      try {
+        const { data, error } = await sb.from('members').select('*').eq('active', true).order('team').order('name');
+        if(error) throw error;
+        if(data && data.length > 0){
+          // Rebuild MEMBERS object from DB
+          Object.keys(MEMBERS).forEach(k => MEMBERS[k] = []);
+          data.forEach(row => {
+            if(!MEMBERS[row.team]) MEMBERS[row.team] = [];
+            if(!MEMBERS[row.team].includes(row.name)) MEMBERS[row.team].push(row.name);
+          });
+          console.log('✓ Members loaded from Supabase');
+        }
+      } catch(e){ console.warn('loadMembersFromDB error:', e.message); }
+    }
+
+    async function loadPPEItemsFromDB(){
+      if(!DB_READY) return;
+      try {
+        const { data, error } = await sb.from('ppe_items').select('*').eq('active', true).order('sort_order').order('name');
+        if(error) throw error;
+        if(data && data.length > 0){
+          // Rebuild PPE_ITEMS from DB
+          PPE_ITEMS.length = 0;
+          data.forEach(row => PPE_ITEMS.push(row.name));
+          console.log('✓ PPE items loaded from Supabase:', PPE_ITEMS.length);
+          renderPPEForm();
+        }
+      } catch(e){ console.warn('loadPPEItemsFromDB error:', e.message); }
+    }
+
+    // ── SAVE member to Supabase ────────────────────────────────────────
+    async function saveMemberToDB(name, team, active=true){
+      if(!DB_READY) return;
+      try {
+        await sb.from('members').upsert({name, team, active, updated_at: new Date().toISOString()}, {onConflict:'name,team'});
+      } catch(e){ console.error('saveMemberToDB error:', e); }
+    }
+
+    async function deleteMemberFromDB(name, team){
+      if(!DB_READY) return;
+      try {
+        // Soft delete — set active = false
+        await sb.from('members').update({active: false, updated_at: new Date().toISOString()}).eq('name', name).eq('team', team);
+      } catch(e){ console.error('deleteMemberFromDB error:', e); }
+    }
+
+    async function moveMemberInDB(name, fromTeam, toTeam){
+      if(!DB_READY) return;
+      try {
+        await sb.from('members').update({team: toTeam, updated_at: new Date().toISOString()}).eq('name', name).eq('team', fromTeam);
+      } catch(e){ console.error('moveMemberInDB error:', e); }
+    }
+
+    // ── SAVE PPE item to Supabase ──────────────────────────────────────
+    async function savePPEItemToDB(name, category, active=true){
+      if(!DB_READY) return;
+      try {
+        await sb.from('ppe_items').upsert({name, category, active, updated_at: new Date().toISOString()}, {onConflict:'name'});
+      } catch(e){ console.error('savePPEItemToDB error:', e); }
+    }
+
+    // ── REALTIME for members + PPE items ───────────────────────────────
+    function setupMembersRealtimeSync(){
+      sb.channel('members-ppe-changes')
+        .on('postgres_changes', {event:'*', schema:'public', table:'members'}, async () => {
+          await loadMembersFromDB();
+          refreshSignoutDropdowns();
+          if(document.getElementById('page-manage').classList.contains('active')) renderRoster();
+        })
+        .on('postgres_changes', {event:'*', schema:'public', table:'ppe_items'}, async () => {
+          await loadPPEItemsFromDB();
+          renderPPEForm();
+          if(document.getElementById('page-manage').classList.contains('active')) renderPPEManageList();
+        })
+        .subscribe();
     }
 
     // ── REALTIME — listen for changes from other devices ───────
@@ -607,6 +705,158 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
 
       </div>
     </div>
+
+    <!-- MANAGE TEAMS & PPE -->
+    <div class="page" id="page-manage">
+      <div class="topbar"><h1>Manage teams &amp; PPE</h1></div>
+      <div class="content">
+
+        <!-- SECTION TABS -->
+        <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px" id="manage-tabs">
+          <button class="tab active" onclick="switchManageTab('members')">Team members</button>
+          <button class="tab" onclick="switchManageTab('ppe')">PPE items</button>
+        </div>
+
+        <!-- MEMBERS PANEL -->
+        <div id="manage-members-panel">
+          <div class="two-col" style="gap:20px">
+
+            <!-- ADD / MOVE MEMBER -->
+            <div class="card">
+              <div class="card-header"><span class="card-title">Add or move member</span></div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label>Member name</label>
+                <input type="text" id="mgmt-member-name" placeholder="e.g. John Smith">
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label>Initials</label>
+                <input type="text" id="mgmt-member-initials" placeholder="e.g. JS" style="max-width:80px">
+              </div>
+              <div class="form-group" style="margin-bottom:14px">
+                <label>Assign to team</label>
+                <select id="mgmt-member-team">
+                  <option value="">Select team...</option>
+                  <option>Team 1 — KG</option><option>Team 2 — Thulani</option>
+                  <option>Team 3 — Sipho</option><option>Team 4 — Frans</option>
+                  <option>Team 5 — Jacques</option><option>Team 6 — Justinos</option>
+                  <option>Team 7 — Piet</option><option>O&M Francois</option>
+                  <option>O&M Steven</option><option>Students</option>
+                  <option>Management / Warehouse</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="addMember()" style="width:100%">&#43; Add to team</button>
+            </div>
+
+            <!-- MOVE EXISTING MEMBER -->
+            <div class="card">
+              <div class="card-header"><span class="card-title">Move existing member</span></div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label>Current team</label>
+                <select id="mgmt-from-team" onchange="renderMoveMembers()">
+                  <option value="">Select team...</option>
+                  <option>Team 1 — KG</option><option>Team 2 — Thulani</option>
+                  <option>Team 3 — Sipho</option><option>Team 4 — Frans</option>
+                  <option>Team 5 — Jacques</option><option>Team 6 — Justinos</option>
+                  <option>Team 7 — Piet</option><option>O&M Francois</option>
+                  <option>O&M Steven</option><option>Students</option>
+                  <option>Management / Warehouse</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label>Member</label>
+                <select id="mgmt-move-member"><option value="">Select team first...</option></select>
+              </div>
+              <div class="form-group" style="margin-bottom:14px">
+                <label>Move to team</label>
+                <select id="mgmt-to-team">
+                  <option value="">Select team...</option>
+                  <option>Team 1 — KG</option><option>Team 2 — Thulani</option>
+                  <option>Team 3 — Sipho</option><option>Team 4 — Frans</option>
+                  <option>Team 5 — Jacques</option><option>Team 6 — Justinos</option>
+                  <option>Team 7 — Piet</option><option>O&M Francois</option>
+                  <option>O&M Steven</option><option>Students</option>
+                  <option>Management / Warehouse</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="moveMember()" style="width:100%">&#8594; Move member</button>
+            </div>
+          </div>
+
+          <!-- CURRENT TEAM ROSTER -->
+          <div class="card" style="margin-top:4px">
+            <div class="card-header">
+              <span class="card-title">Current team roster</span>
+              <select id="mgmt-view-team" onchange="renderRoster()" style="height:30px;font-size:12px;width:auto;padding:0 8px">
+                <option value="all">All teams</option>
+                <option>Team 1 — KG</option><option>Team 2 — Thulani</option>
+                <option>Team 3 — Sipho</option><option>Team 4 — Frans</option>
+                <option>Team 5 — Jacques</option><option>Team 6 — Justinos</option>
+                <option>Team 7 — Piet</option><option>O&M Francois</option>
+                <option>O&M Steven</option><option>Students</option>
+                <option>Management / Warehouse</option>
+              </select>
+            </div>
+            <div id="roster-content"></div>
+          </div>
+        </div>
+
+        <!-- PPE ITEMS PANEL -->
+        <div id="manage-ppe-panel" style="display:none">
+          <div class="two-col" style="gap:20px">
+            <div class="card">
+              <div class="card-header"><span class="card-title">Add new PPE item</span></div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label>Item name</label>
+                <input type="text" id="mgmt-ppe-name" placeholder="e.g. Rain jacket">
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label>Category</label>
+                <select id="mgmt-ppe-cat">
+                  <option value="">Select category...</option>
+                  <option>Visibility vest</option><option>Trouser</option><option>Jacket</option>
+                  <option>T-shirt</option><option>Golf shirt</option><option>Footwear</option>
+                  <option>Gloves</option><option>Eye protection</option><option>Head protection</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:10px">
+                <label>Initial stock quantity</label>
+                <input type="number" id="mgmt-ppe-qty" placeholder="0" min="0" style="max-width:100px">
+              </div>
+              <div class="form-group" style="margin-bottom:14px">
+                <label>Reorder threshold (minimum)</label>
+                <input type="number" id="mgmt-ppe-thresh" placeholder="12" min="1" style="max-width:100px">
+              </div>
+              <button class="btn btn-primary" onclick="addPPEItem()" style="width:100%">&#43; Add PPE item</button>
+            </div>
+
+            <div class="card">
+              <div class="card-header"><span class="card-title">Remove PPE item</span></div>
+              <p style="font-size:12px;color:var(--grey);margin-bottom:12px;line-height:1.5">
+                Removing an item hides it from sign-out forms and stock. Historical sign-out records are not affected.
+              </p>
+              <div class="form-group" style="margin-bottom:14px">
+                <label>Select item to remove</label>
+                <select id="mgmt-remove-ppe" style="width:100%">
+                  <option value="">Select item...</option>
+                </select>
+              </div>
+              <button class="btn btn-danger" onclick="removePPEItem()" style="width:100%">&#8722; Remove item</button>
+            </div>
+          </div>
+
+          <!-- CURRENT PPE LIST -->
+          <div class="card" style="margin-top:4px">
+            <div class="card-header">
+              <span class="card-title">Current PPE item list</span>
+              <span class="badge b-info" id="ppe-count-badge"></span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0" id="ppe-list-grid"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </div>
 
@@ -625,7 +875,7 @@ let thresholds={};STOCK.forEach(s=>{
 });
 const MEMBERS={'Team 1 — KG':['Katlego (KB)','Alfred (AM)','Roberto (RS)','Michael (MS)','Dirk (DH)'],'Team 2 — Thulani':['Thulani (TM)','Andile (AM)','Erick (E)','Nangamso (NN)','Doctor (DM)'],'Team 3 — Sipho':['Sipho (SM)','Lizwi (LT)','Given (GM)','Sibusiso (SB)'],'Team 4 — Frans':['Frans (FM)','Simon M (SM)','Andy (AS)','Simon H (SH)','Richard (R)'],'Team 5 — Jacques':['Jacques (JJ)','Victor (VH)','Ishmael (IM)','Sihle (SM)','Nhlanhla (NS)'],'Team 6 — Justinos':['Justinos (JL)','Goodwill (GN)','Potego (PS)','Daniel (DN)','Siyabonga (SM)'],'Team 7 — Piet':['Piet (PL)','Themba (TN)','Emanuel (EN)','Alfred M (AM2)','Thembeka (TD)','Vincent (VL)'],'O&M Francois':['Francois (FB)','Johannes (JS)'],'O&M Steven':['Steven (SD)','Simphiwe (SS)'],'Students':['Admision (AN)','Phathutshebzo (PR)','Vanessa (VM)','Koketso (KM)','Bongani (BN)'],'Management / Warehouse':['William Jnr (WJ)','Jaco Joubert (JJ)','Cornelis Bezuidenhout (CB)','David Wilson (DW)']};
 let signouts=[];
-function nav(btn,page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');if(btn)btn.classList.add('active');if(page==='stock')renderStock();if(page==='teamppe')renderTeamPPE();if(page==='log')renderLog();if(page==='reorder')renderReorder();if(page==='dashboard')renderDashboard();if(page==='signout')setTimeout(initSigPad,80);if(page==='receive'){renderReceiveGrid();clearReceive();}}
+function nav(btn,page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');if(btn)btn.classList.add('active');if(page==='stock')renderStock();if(page==='teamppe')renderTeamPPE();if(page==='log')renderLog();if(page==='reorder')renderReorder();if(page==='dashboard')renderDashboard();if(page==='signout')setTimeout(initSigPad,80);if(page==='receive'){renderReceiveGrid();clearReceive();}if(page==='manage'){renderRoster();renderPPEManageList();}}
 function updateMembers(){
   const t=document.getElementById('so-team').value;
   const s=document.getElementById('so-name');
@@ -1138,6 +1388,242 @@ function renderDashboard(){const low=getLow();document.getElementById('dash-aler
 function updateDashLog(){const el=document.getElementById('dash-log');if(!signouts.length){el.innerHTML='<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">No sign-outs yet.</div>';return;}el.innerHTML=signouts.slice(-4).reverse().map(s=>`<div class="log-row"><div class="log-dot" style="background:var(--red)"></div><div><div class="log-text">${s.item} — ${s.name}</div><div class="log-time">${s.date} · ${s.team} · ${s.site}</div></div></div>`).join('');}
 
 
+
+
+// ── Team & PPE Management ──────────────────────────────────────────────────
+function switchManageTab(tab){
+  document.querySelectorAll('#manage-tabs .tab').forEach((t,i)=>{
+    t.classList.toggle('active', (i===0&&tab==='members')||(i===1&&tab==='ppe'));
+  });
+  document.getElementById('manage-members-panel').style.display = tab==='members'?'':'none';
+  document.getElementById('manage-ppe-panel').style.display   = tab==='ppe'?'':'none';
+  if(tab==='members') renderRoster();
+  if(tab==='ppe') renderPPEManageList();
+}
+
+// ── MEMBER MANAGEMENT ─────────────────────────────────────────────────────
+function addMember(){
+  const name = document.getElementById('mgmt-member-name').value.trim();
+  const initials = document.getElementById('mgmt-member-initials').value.trim().toUpperCase();
+  const team = document.getElementById('mgmt-member-team').value;
+  if(!name){ alert('Please enter a member name.'); return; }
+  if(!team){ alert('Please select a team.'); return; }
+  const displayName = initials ? `${name} (${initials})` : name;
+  if(!MEMBERS[team]) MEMBERS[team] = [];
+  if(MEMBERS[team].includes(displayName)){
+    alert(`${displayName} is already in ${team}.`); return;
+  }
+  MEMBERS[team].push(displayName);
+  saveMembersToStorage();
+  saveMemberToDB(displayName, team);
+  // Also add blank entry in TEAM_PPE_DATA
+  if(TEAM_PPE_DATA[team]){
+    const items = TEAM_PPE_DATA[team].length > 0
+      ? Object.keys(TEAM_PPE_DATA[team][0].items).reduce((a,k)=>{a[k]=[0,0,0,0];return a;},{})
+      : {};
+    TEAM_PPE_DATA[team].push({name, items});
+  }
+  document.getElementById('mgmt-member-name').value='';
+  document.getElementById('mgmt-member-initials').value='';
+  document.getElementById('mgmt-member-team').value='';
+  renderRoster();
+  refreshSignoutDropdowns();
+  alert(`✓ ${displayName} added to ${team}.`);
+}
+
+function renderMoveMembers(){
+  const team = document.getElementById('mgmt-from-team').value;
+  const sel = document.getElementById('mgmt-move-member');
+  sel.innerHTML = '<option value="">Select member...</option>';
+  (MEMBERS[team]||[]).forEach(m => sel.innerHTML += `<option>${m}</option>`);
+}
+
+function moveMember(){
+  const fromTeam = document.getElementById('mgmt-from-team').value;
+  const member   = document.getElementById('mgmt-move-member').value;
+  const toTeam   = document.getElementById('mgmt-to-team').value;
+  if(!fromTeam||!member||!toTeam){ alert('Please fill in all fields.'); return; }
+  if(fromTeam===toTeam){ alert('From and to team are the same.'); return; }
+
+  // Remove from old team
+  MEMBERS[fromTeam] = (MEMBERS[fromTeam]||[]).filter(m=>m!==member);
+  // Add to new team
+  if(!MEMBERS[toTeam]) MEMBERS[toTeam]=[];
+  if(!MEMBERS[toTeam].includes(member)) MEMBERS[toTeam].push(member);
+
+  // Move TEAM_PPE_DATA entry
+  if(TEAM_PPE_DATA[fromTeam] && TEAM_PPE_DATA[toTeam]){
+    const cleanName = member.replace(/\s*\(\w+\)\s*$/,'').trim();
+    const entry = TEAM_PPE_DATA[fromTeam].find(m=>m.name===cleanName||m.name.toLowerCase()===cleanName.toLowerCase());
+    if(entry){
+      TEAM_PPE_DATA[fromTeam] = TEAM_PPE_DATA[fromTeam].filter(m=>m!==entry);
+      TEAM_PPE_DATA[toTeam].push(entry);
+    }
+  }
+
+  saveMembersToStorage();
+  moveMemberInDB(member, fromTeam, toTeam);
+  renderMoveMembers();
+  renderRoster();
+  refreshSignoutDropdowns();
+  alert(`✓ ${member} moved from ${fromTeam} to ${toTeam}.`);
+}
+
+function removeMemberFromTeam(team, member){
+  if(!confirm(`Remove ${member} from ${team}? Their sign-out history is not affected.`)) return;
+  MEMBERS[team] = (MEMBERS[team]||[]).filter(m=>m!==member);
+  saveMembersToStorage();
+  deleteMemberFromDB(member, team);
+  renderRoster();
+  refreshSignoutDropdowns();
+}
+
+function renderRoster(){
+  const teamSel = document.getElementById('mgmt-view-team')?.value||'all';
+  const teams = teamSel==='all' ? Object.keys(MEMBERS) : [teamSel];
+  const el = document.getElementById('roster-content');
+  if(!el) return;
+  el.innerHTML = teams.map(team => {
+    const members = MEMBERS[team]||[];
+    if(!members.length) return '';
+    return `<div style="margin-bottom:0">
+      <div style="background:var(--dark2);color:var(--yellow);font-family:'Barlow Condensed',sans-serif;
+        font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
+        padding:6px 12px">${team} <span style="color:rgba(255,255,255,0.4);font-weight:400">${members.length} members</span></div>
+      ${members.map(m=>`
+        <div class="roster-member">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="avatar">${m.substring(0,2).toUpperCase()}</div>
+            <span style="font-size:13px">${m}</span>
+          </div>
+          <button class="ppe-remove-btn" onclick="removeMemberFromTeam('${team.replace(/'/g,"\\'")}','${m.replace(/'/g,"\\'")}')">×</button>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function saveMembersToStorage(){
+  try{ localStorage.setItem('res_members', JSON.stringify(MEMBERS)); }catch(e){}
+}
+
+function loadMembersFromStorage(){
+  try{
+    const stored = localStorage.getItem('res_members');
+    if(stored){
+      const saved = JSON.parse(stored);
+      // Merge saved into MEMBERS (saved takes priority)
+      Object.keys(saved).forEach(team=>{ MEMBERS[team]=saved[team]; });
+    }
+  }catch(e){}
+}
+
+function refreshSignoutDropdowns(){
+  // Refresh the sign-out team member dropdown if a team is selected
+  const currentTeam = document.getElementById('so-team')?.value;
+  if(currentTeam && currentTeam !== 'Site') updateMembers();
+}
+
+// ── PPE ITEM MANAGEMENT ────────────────────────────────────────────────────
+function addPPEItem(){
+  const name   = document.getElementById('mgmt-ppe-name').value.trim();
+  const cat    = document.getElementById('mgmt-ppe-cat').value;
+  const qty    = parseInt(document.getElementById('mgmt-ppe-qty').value)||0;
+  const thresh = parseInt(document.getElementById('mgmt-ppe-thresh').value)||12;
+  if(!name){ alert('Please enter an item name.'); return; }
+  if(!cat){  alert('Please select a category.'); return; }
+  if(PPE_ITEMS.includes(name)){ alert(`"${name}" already exists in the PPE list.`); return; }
+  if(STOCK.find(s=>s.n===name)){ alert(`"${name}" already exists in stock.`); return; }
+
+  // Add to PPE_ITEMS (sign-out form)
+  PPE_ITEMS.push(name);
+  // Add to STOCK
+  STOCK.push({n:name, cat, qty, last:new Date().toLocaleDateString('en-ZA',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'/')});
+  // Add threshold
+  thresholds[name] = thresh;
+  // Save to DB if connected
+  saveStockItem(name, qty, new Date().toISOString().split('T')[0]);
+  saveThreshold(name, thresh);
+  // Save to localStorage
+  savePPEItemsToStorage();
+  savePPEItemToDB(name, cat, true);
+
+  document.getElementById('mgmt-ppe-name').value='';
+  document.getElementById('mgmt-ppe-cat').value='';
+  document.getElementById('mgmt-ppe-qty').value='';
+  document.getElementById('mgmt-ppe-thresh').value='';
+
+  renderPPEManageList();
+  renderPPEForm();
+  updateReorderBadge();
+  alert(`✓ "${name}" added to PPE list and warehouse stock.`);
+}
+
+function removePPEItem(){
+  const name = document.getElementById('mgmt-remove-ppe').value;
+  if(!name){ alert('Please select an item to remove.'); return; }
+  if(!confirm(`Remove "${name}" from the PPE list and sign-out form?\n\nHistorical records are not affected.`)) return;
+
+  const idx = PPE_ITEMS.indexOf(name);
+  if(idx>=0) PPE_ITEMS.splice(idx,1);
+  const sIdx = STOCK.findIndex(s=>s.n===name);
+  if(sIdx>=0) STOCK.splice(sIdx,1);
+  delete thresholds[name];
+
+  savePPEItemsToStorage();
+  savePPEItemToDB(name, '', false);
+  renderPPEManageList();
+  renderPPEForm();
+  updateReorderBadge();
+  alert(`✓ "${name}" removed from the PPE list.`);
+}
+
+function renderPPEManageList(){
+  const grid = document.getElementById('ppe-list-grid');
+  const removeSelect = document.getElementById('mgmt-remove-ppe');
+  const badge = document.getElementById('ppe-count-badge');
+  if(!grid) return;
+
+  grid.innerHTML = PPE_ITEMS.map(item => {
+    const stock = STOCK.find(s=>s.n===item);
+    return `<div class="ppe-list-item">
+      <div>
+        <div style="font-size:12px;font-weight:500">${item}</div>
+        <div style="font-size:10px;color:var(--grey)">${stock?stock.cat:'—'} · ${stock?stock.qty:0} in stock</div>
+      </div>
+      <button class="ppe-remove-btn" onclick="quickRemovePPE('${item.replace(/'/g,"\\'")}')">×</button>
+    </div>`;
+  }).join('');
+
+  if(removeSelect){
+    removeSelect.innerHTML = '<option value="">Select item...</option>' +
+      PPE_ITEMS.map(i=>`<option>${i}</option>`).join('');
+  }
+  if(badge) badge.textContent = PPE_ITEMS.length + ' items';
+}
+
+function quickRemovePPE(name){
+  document.getElementById('mgmt-remove-ppe').value = name;
+  removePPEItem();
+}
+
+function savePPEItemsToStorage(){
+  try{ localStorage.setItem('res_ppe_items', JSON.stringify(PPE_ITEMS)); }catch(e){}
+}
+
+function loadPPEItemsFromStorage(){
+  try{
+    const stored = localStorage.getItem('res_ppe_items');
+    if(stored){
+      const saved = JSON.parse(stored);
+      // Add any new items not already in PPE_ITEMS
+      saved.forEach(item=>{ if(!PPE_ITEMS.includes(item)) PPE_ITEMS.push(item); });
+      // Remove any that were deleted
+      const toRemove = PPE_ITEMS.filter(item=>!saved.includes(item));
+      toRemove.forEach(item=>{ PPE_ITEMS.splice(PPE_ITEMS.indexOf(item),1); });
+    }
+  }catch(e){}
+}
+// ──────────────────────────────────────────────────────────────────────────
 
 // ── Site sign-out management ───────────────────────────────────────────────
 let savedSites = [
@@ -1708,7 +2194,7 @@ function exportReorder(){
 }
 const now=new Date();
 document.getElementById('hdr-date').textContent=now.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-renderPPEForm();renderDashboard();updateReorderBadge();setTimeout(initSigPad,100);initBaseline();initDB();loadSavedSites();window.addEventListener('resize',resizeSigCanvas);
+loadMembersFromStorage();loadPPEItemsFromStorage();renderPPEForm();renderDashboard();updateReorderBadge();setTimeout(initSigPad,100);initBaseline();initDB();loadSavedSites();window.addEventListener('resize',resizeSigCanvas);
 document.getElementById('so-date').value=now.toISOString().split('T')[0];
 
 function toggleSidebar(){
