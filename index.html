@@ -229,17 +229,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         // Load members
         console.log('Loading members from DB...');
         await loadMembersFromDB();
+        // If members table was empty, seed it now from hardcoded data
+        await seedMembersIfEmpty();
         // Load PPE items
         console.log('Loading PPE items from DB...');
         await loadPPEItemsFromDB();
-        console.log('✓ All data loaded. MEMBERS teams:', Object.keys(MEMBERS));
-        console.log('✓ PPE_ITEMS count:', PPE_ITEMS.length);
+        // If PPE items table was empty, seed it now
+        await seedPPEItemsIfEmpty();
+        const totalMembers = Object.values(MEMBERS).reduce((a,b)=>a+(b.length||0),0);
+        console.log('✓ All data loaded. Members:', totalMembers, '| PPE items:', PPE_ITEMS.length);
         // Force refresh all UI after everything is loaded
         renderPPEForm();
         refreshSignoutDropdowns();
         refreshAllTeamDropdowns();
         renderDashboard();
         setSyncIndicator('online');
+        // Show member count in header
+        const mci = document.getElementById('member-count-indicator');
+        if(mci) mci.textContent = totalMembers + ' members · ' + PPE_ITEMS.length + ' PPE items';
       } catch(e) {
         console.warn('Supabase not configured yet — running in local mode:', e.message);
         syncStatus = 'local';
@@ -358,22 +365,63 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
 
 
     // ── LOAD members + PPE items from Supabase ────────────────────────
+
+    // ── Auto-seed if tables are empty ─────────────────────────────────
+    async function seedMembersIfEmpty(){
+      if(!DB_READY) return;
+      try {
+        const { count } = await sb.from('members').select('*', {count:'exact',head:true});
+        if(count === 0){
+          console.log('Members table empty — seeding from defaults...');
+          const rows = [];
+          Object.keys(MEMBERS).forEach(team => {
+            (MEMBERS[team]||[]).forEach(name => {
+              rows.push({name, team, active: true});
+            });
+          });
+          if(rows.length > 0){
+            await sb.from('members').upsert(rows, {onConflict:'name,team'});
+            console.log('✓ Seeded', rows.length, 'members to Supabase');
+          }
+        } else {
+          console.log('Members table has', count, 'rows — no seed needed');
+        }
+      } catch(e){ console.warn('seedMembersIfEmpty error:', e.message); }
+    }
+
+    async function seedPPEItemsIfEmpty(){
+      if(!DB_READY) return;
+      try {
+        const { count } = await sb.from('ppe_items').select('*', {count:'exact',head:true});
+        if(count === 0){
+          console.log('PPE items table empty — seeding from defaults...');
+          const rows = PPE_ITEMS.map((name,i) => ({name, category:'Other', sort_order:i+1, active:true}));
+          await sb.from('ppe_items').upsert(rows, {onConflict:'name'});
+          console.log('✓ Seeded', rows.length, 'PPE items to Supabase');
+        } else {
+          console.log('PPE items table has', count, 'rows — no seed needed');
+        }
+      } catch(e){ console.warn('seedPPEItemsIfEmpty error:', e.message); }
+    }
     async function loadMembersFromDB(){
       if(!DB_READY) return;
       try {
         const { data, error } = await sb.from('members').select('*').eq('active', true).order('team').order('name');
         if(error) throw error;
         if(data && data.length > 0){
-          // Rebuild MEMBERS object from DB — clear ALL teams first
-          const allTeamKeys = Object.keys(MEMBERS);
-          allTeamKeys.forEach(k => { MEMBERS[k] = []; });
-          data.forEach(row => {
-            if(!MEMBERS[row.team]) MEMBERS[row.team] = [];
-            if(!MEMBERS[row.team].includes(row.name)) MEMBERS[row.team].push(row.name);
-          });
-          // Save to localStorage as offline backup (only if data is valid)
-          if(data.length > 0) saveMembersToStorage();
-          console.log('✓ Members loaded from Supabase:', data.length, 'members');
+          // Only replace members if DB has data - never wipe hardcoded defaults
+          if(data.length > 0){
+            // Clear all teams then rebuild from DB
+            Object.keys(MEMBERS).forEach(k => { MEMBERS[k] = []; });
+            data.forEach(row => {
+              if(!MEMBERS[row.team]) MEMBERS[row.team] = [];
+              if(!MEMBERS[row.team].includes(row.name)) MEMBERS[row.team].push(row.name);
+            });
+            saveMembersToStorage();
+            console.log('✓ Members loaded from Supabase:', data.length, 'members');
+          } else {
+            console.warn('⚠ Supabase members table empty — using hardcoded defaults');
+          }
           // Refresh all dropdowns that use member lists
           refreshSignoutDropdowns();
           refreshAllTeamDropdowns();
@@ -498,6 +546,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
     <div class="header-right">
       <span class="hdr-date" id="hdr-date"></span>
       <span id="sync-indicator" style="font-size:10px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;cursor:default;opacity:0.7">○ Connecting...</span>
+      <span id="member-count-indicator" style="font-size:9px;color:rgba(255,255,255,0.3);font-family:'Barlow Condensed',sans-serif;cursor:default"></span>
       <button class="hdr-btn" onclick="exportLog()">&#8659; Export PDF</button>
       <button class="toggle-btn" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
         <svg viewBox="0 0 24 24" id="toggle-icon"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
