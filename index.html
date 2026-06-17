@@ -83,8 +83,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
 .sig-toolbar{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--light);border-top:1px solid var(--border)}
 .sig-label{font-size:11px;color:var(--grey);font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.07em;display:flex;align-items:center;gap:6px}
 .sig-label.done{color:var(--green);font-weight:700}
-.sig-label.done::before{content:"✓ ";font-size:13px}
-.sig-label.empty::before{content:"✎ ";font-size:13px}
+.sig-label.done::before{content:"&#10003; ";font-size:13px}
+.sig-label.empty::before{content:"&#9998; ";font-size:13px}
 .sig-actions{display:flex;gap:6px}
 .sig-btn{padding:4px 10px;font-size:11px;border-radius:5px;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--dark);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;transition:all 0.12s}
 .sig-btn:hover{background:var(--light)}
@@ -141,7 +141,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
 .yr-label{font-size:9px;color:rgba(255,255,255,0.5);display:block;letter-spacing:0.05em}
 
 .cell-new{outline:2px solid var(--yellow)!important;outline-offset:-2px;position:relative}
-.cell-new::after{content:'↑';position:absolute;top:-1px;right:1px;font-size:8px;color:var(--dark);font-weight:700;line-height:1}
+.cell-new::after{content:'&#8593;';position:absolute;top:-1px;right:1px;font-size:8px;color:var(--dark);font-weight:700;line-height:1}
 
 .recv-item-row{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
 .recv-item-row:nth-child(3n){border-right:none}
@@ -212,7 +212,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // ── SUPABASE CONFIG \u2014 fill these in after creating your project ──
+    // \u2500\u2500 SUPABASE CONFIG \u2014 fill these in after creating your project \u2500\u2500
     const SUPABASE_URL = 'https://ryxqrwwyxqvueixapivx.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_7HIDThybpwb2iV5o5GBt4w_xXMSWOtX';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -229,7 +229,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         DB_READY = true;
         syncStatus = 'online';
         setSyncIndicator('online');
-        console.log('✓ DB_READY, loading all data...');
+        console.log('\u2713 DB_READY, loading all data...');
         await loadAllFromDB();
         setupRealtimeSync();
         setupMembersRealtimeSync();
@@ -244,7 +244,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         // If PPE items table was empty, seed it now
         await seedPPEItemsIfEmpty();
         const totalMembers = Object.values(MEMBERS).reduce((a,b)=>a+(b.length||0),0);
-        console.log('✓ All data loaded. Members:', totalMembers, '| PPE items:', PPE_ITEMS.length);
+        console.log('\u2713 All data loaded. Members:', totalMembers, '| PPE items:', PPE_ITEMS.length);
         // Force refresh all UI after everything is loaded
         renderPPEForm();
         refreshSignoutDropdowns();
@@ -253,7 +253,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         setSyncIndicator('online');
         // Show member count in header
         const mci = document.getElementById('member-count-indicator');
-        if(mci) mci.textContent = totalMembers + ' members · ' + PPE_ITEMS.length + ' PPE items';
+        if(mci) mci.textContent = totalMembers + ' members \u00b7 ' + PPE_ITEMS.length + ' PPE items';
       } catch(e) {
         console.warn('Supabase not configured yet \u2014 running in local mode:', e.message);
         syncStatus = 'local';
@@ -265,10 +265,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       const el = document.getElementById('sync-indicator');
       if(!el) return;
       const cfg = {
-        online: {color:'#27ae60', text:'● Live sync on',   title:'Connected \u2014 all changes sync across devices'},
-        local:  {color:'#e67e22', text:'○ Local mode',     title:'Supabase not configured \u2014 changes are local only'},
-        saving: {color:'#fddd00', text:'↑ Saving...',      title:'Writing to database'},
-        error:  {color:'#c0392b', text:'✕ Sync error',     title:'Could not save \u2014 check connection'},
+        online: {color:'#27ae60', text:'\u25cf Live sync on',   title:'Connected \u2014 all changes sync across devices'},
+        local:  {color:'#e67e22', text:'\u25cb Local mode',     title:'Supabase not configured \u2014 changes are local only'},
+        saving: {color:'#fddd00', text:'\u2191 Saving...',      title:'Writing to database'},
+        error:  {color:'#c0392b', text:'\u2715 Sync error',     title:'Could not save \u2014 check connection'},
       };
       const c = cfg[status] || cfg.local;
       el.style.color = c.color;
@@ -276,7 +276,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       el.title = c.title;
     }
 
-    // ── LOAD from Supabase ─────────────────────────────────────
+    // \u2500\u2500 LOAD from Supabase \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     async function loadAllFromDB(){
       if(!DB_READY) return;
       try {
@@ -317,7 +317,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       } catch(e){ console.error('loadAllFromDB error:', e); }
     }
 
-    // ── SAVE stock item to Supabase ────────────────────────────
+    // \u2500\u2500 SAVE stock item to Supabase \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     async function saveStockItem(itemName, qty, lastMoved){
       if(!DB_READY) return;
       setSyncIndicator('saving');
@@ -327,7 +327,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       } catch(e){ console.error('saveStockItem error:', e); setSyncIndicator('error'); }
     }
 
-    // ── SAVE threshold to Supabase ─────────────────────────────
+    // \u2500\u2500 SAVE threshold to Supabase \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     async function saveThreshold(itemName, value){
       if(!DB_READY) return;
       try {
@@ -338,7 +338,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
     // Track signouts pushed from THIS device so realtime echo is ignored
     const _localPushedSignouts = new Set();
 
-    // ── SAVE signout to Supabase ───────────────────────────────
+    // \u2500\u2500 SAVE signout to Supabase \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     async function saveSignout(record){
       if(!DB_READY) return;
       setSyncIndicator('saving');
@@ -358,7 +358,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       } catch(e){ console.error('saveSignout error:', e); setSyncIndicator('error'); }
     }
 
-    // ── SAVE delivery to Supabase ──────────────────────────────
+    // \u2500\u2500 SAVE delivery to Supabase \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     async function saveDelivery(delivery){
       if(!DB_READY) return;
       try {
@@ -371,9 +371,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
     }
 
 
-    // ── LOAD members + PPE items from Supabase ────────────────────────
+    // \u2500\u2500 LOAD members + PPE items from Supabase \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
-    // ── Auto-seed if tables are empty ─────────────────────────────────
+    // \u2500\u2500 Auto-seed if tables are empty \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     async function seedMembersIfEmpty(){
       if(!DB_READY) return;
       try {
@@ -388,7 +388,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
           });
           if(rows.length > 0){
             await sb.from('members').upsert(rows, {onConflict:'name,team'});
-            console.log('✓ Seeded', rows.length, 'members to Supabase');
+            console.log('\u2713 Seeded', rows.length, 'members to Supabase');
           }
         } else {
           console.log('Members table has', count, 'rows \u2014 no seed needed');
@@ -404,7 +404,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
           console.log('PPE items table empty \u2014 seeding from defaults...');
           const rows = PPE_ITEMS.map((name,i) => ({name, category:'Other', sort_order:i+1, active:true}));
           await sb.from('ppe_items').upsert(rows, {onConflict:'name'});
-          console.log('✓ Seeded', rows.length, 'PPE items to Supabase');
+          console.log('\u2713 Seeded', rows.length, 'PPE items to Supabase');
         } else {
           console.log('PPE items table has', count, 'rows \u2014 no seed needed');
         }
@@ -425,9 +425,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
               if(!MEMBERS[row.team].includes(row.name)) MEMBERS[row.team].push(row.name);
             });
             saveMembersToStorage();
-            console.log('✓ Members loaded from Supabase:', data.length, 'members');
+            console.log('\u2713 Members loaded from Supabase:', data.length, 'members');
           } else {
-            console.warn('⚠ Supabase members table empty \u2014 using hardcoded defaults');
+            console.warn('\u26a0 Supabase members table empty \u2014 using hardcoded defaults');
           }
           // Refresh all dropdowns that use member lists
           refreshSignoutDropdowns();
@@ -449,7 +449,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
           // Rebuild PPE_ITEMS from DB
           PPE_ITEMS.length = 0;
           data.forEach(row => PPE_ITEMS.push(row.name));
-          console.log('✓ PPE items loaded from Supabase:', PPE_ITEMS.length);
+          console.log('\u2713 PPE items loaded from Supabase:', PPE_ITEMS.length);
           renderPPEForm();
           if(document.getElementById('page-manage') &&
              document.getElementById('page-manage').classList.contains('active')){
@@ -459,7 +459,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       } catch(e){ console.warn('loadPPEItemsFromDB error:', e.message); }
     }
 
-    // ── SAVE member to Supabase ────────────────────────────────────────
+    // \u2500\u2500 SAVE member to Supabase \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     async function saveMemberToDB(name, team, active=true){
       if(!DB_READY) return;
       try {
@@ -482,7 +482,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       } catch(e){ console.error('moveMemberInDB error:', e); }
     }
 
-    // ── SAVE PPE item to Supabase ──────────────────────────────────────
+    // \u2500\u2500 SAVE PPE item to Supabase \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     async function savePPEItemToDB(name, category, active=true){
       if(!DB_READY) return;
       try {
@@ -490,7 +490,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       } catch(e){ console.error('savePPEItemToDB error:', e); }
     }
 
-    // ── REALTIME for members + PPE items ───────────────────────────────
+    // \u2500\u2500 REALTIME for members + PPE items \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
     function setupMembersRealtimeSync(){
       sb.channel('members-ppe-changes')
         .on('postgres_changes', {event:'*', schema:'public', table:'members'}, async () => {
@@ -506,7 +506,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         .subscribe();
     }
 
-    // ── REALTIME \u2014 listen for changes from other devices ───────
+    // \u2500\u2500 REALTIME \u2014 listen for changes from other devices \u2500\u2500\u2500\u2500\u2500\u2500\u2500
     function setupRealtimeSync(){
       sb.channel('stock-changes')
         .on('postgres_changes', {event:'*', schema:'public', table:'stock'}, payload => {
@@ -552,7 +552,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
     </div>
     <div class="header-right">
       <span class="hdr-date" id="hdr-date"></span>
-      <span id="sync-indicator" style="font-size:10px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;cursor:default;opacity:0.7">○ Connecting...</span>
+      <span id="sync-indicator" style="font-size:10px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;cursor:default;opacity:0.7">&#9675; Connecting...</span>
       <span id="member-count-indicator" style="font-size:9px;color:rgba(255,255,255,0.3);font-family:'Barlow Condensed',sans-serif;cursor:default"></span>
       <button class="hdr-btn" onclick="exportLog()">&#8659; Export PDF</button>
       <button class="toggle-btn" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
@@ -584,7 +584,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       <div class="nav-label">Settings</div>
       <button class="nav-item" onclick="nav(this,'manage')"><span class="ni">&#9881;</span> <span>Manage teams &amp; PPE</span></button>
     </div>
-    <div class="sidebar-footer"><p>Solar · Energy · Excellence</p></div>
+    <div class="sidebar-footer"><p>Solar &#183; Energy &#183; Excellence</p></div>
   </div>
   <div class="main">
     <div class="page active" id="page-dashboard">
@@ -620,7 +620,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       <div class="content">
         <div class="card"><div class="card-header"><span class="card-title">Team member details</span></div>
           <div class="form-grid">
-            <div class="form-group"><label>Team</label><select id="so-team" onchange="onTeamChange()"><option value="">Select team...</option><option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option><option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option><option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option><option>Team 7 &#8212; Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option disabled style="color:var(--border)">──────────</option><option value="Site">📍 Site sign-out</option></select></div>
+            <div class="form-group"><label>Team</label><select id="so-team" onchange="onTeamChange()"><option value="">Select team...</option><option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option><option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option><option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option><option>Team 7 &#8212; Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option disabled style="color:var(--border)">----------</option><option value="Site">&#128205; Site sign-out</option></select></div>
             <div class="form-group" id="name-group-member">
               <label>Name</label>
               <select id="so-name"><option value="">Select team first...</option></select>
@@ -646,7 +646,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
             <div style="display:flex;align-items:center;gap:8px">
               <span id="signout-mode-badge" style="display:none;background:#e8f0fb;color:#185fa5;
                 font-size:10px;padding:2px 8px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;
-                font-weight:700;letter-spacing:0.04em">📍 SITE SIGN-OUT</span>
+                font-weight:700;letter-spacing:0.04em">&#128205; SITE SIGN-OUT</span>
               <span style="font-size:11px;color:var(--grey)">Fill size & qty only for items being issued</span>
             </div>
           </div>
@@ -684,9 +684,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         <div class="topbar-actions">
           <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--grey)">
             <span style="font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:0.06em">Colour key:</span>
-            <span style="background:#fff9e6;padding:2px 7px;border-radius:3px;font-size:11px;border:1px solid var(--border)">1–2</span>
-            <span style="background:#ffe5b0;padding:2px 7px;border-radius:3px;font-size:11px;border:1px solid var(--border)">3–5</span>
-            <span style="background:#ffb3b3;padding:2px 7px;border-radius:3px;font-size:11px;border:1px solid var(--border)">6–9</span>
+            <span style="background:#fff9e6;padding:2px 7px;border-radius:3px;font-size:11px;border:1px solid var(--border)">1&#8211;2</span>
+            <span style="background:#ffe5b0;padding:2px 7px;border-radius:3px;font-size:11px;border:1px solid var(--border)">3&#8211;5</span>
+            <span style="background:#ffb3b3;padding:2px 7px;border-radius:3px;font-size:11px;border:1px solid var(--border)">6&#8211;9</span>
             <span style="background:#cc0000;color:#fff;padding:2px 7px;border-radius:3px;font-size:11px">10+</span>
           </div>
         </div>
@@ -706,7 +706,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
     </div>
     <div class="page" id="page-log">
       <div class="topbar"><h1>Sign-out log</h1><div class="topbar-actions"><button class="btn btn-dark" onclick="exportLog()">&#8659; Export PDF</button></div></div>
-      <div class="content"><div class="filter-row"><input type="text" placeholder="Search name or item..." id="log-search" oninput="renderLog()"><select id="log-team" onchange="renderLog()"><option value="">All teams</option><option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option><option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option><option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option><option>Team 7 &#8212; Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option value="Site">📍 Site sign-outs</option></select><input type="date" id="log-date" onchange="renderLog()" style="max-width:150px"></div>
+      <div class="content"><div class="filter-row"><input type="text" placeholder="Search name or item..." id="log-search" oninput="renderLog()"><select id="log-team" onchange="renderLog()"><option value="">All teams</option><option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option><option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option><option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option><option>Team 7 &#8212; Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option value="Site">&#128205; Site sign-outs</option></select><input type="date" id="log-date" onchange="renderLog()" style="max-width:150px"></div>
         <div class="card" style="padding:0;overflow:hidden"><table><thead><tr><th style="width:12%">Date</th><th style="width:18%">Name</th><th style="width:14%">Team</th><th style="width:20%">Item</th><th style="width:8%">Size</th><th style="width:6%">Qty</th><th style="width:10%">Site</th><th style="width:12%">Signature</th></tr></thead><tbody id="log-tbody"><tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr></tbody></table></div>
       </div>
     </div>
@@ -978,7 +978,7 @@ function updateMembers(){
 function onNameChange(){
   updateMembers();
 }
-// ── Signature pad ──────────────────────────────────────────
+// \u2500\u2500 Signature pad \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let sigCanvas, sigCtx, sigDrawing=false, sigHasSig=false, sigLastX=0, sigLastY=0;
 
 function initSigPad(){
@@ -1069,7 +1069,7 @@ function getSigDataURL(){
 function sigIsEmpty(){
   return !sigHasSig;
 }
-// ────────────────────────────────────────────────────────────
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function renderPPEForm(){
   document.getElementById('ppe-form-list').innerHTML=PPE_ITEMS.map(item=>{
     const k=item.replace(/\s/g,'_');
@@ -1118,7 +1118,7 @@ function quickReceive(itemName){
   }, 150);
 }
 
-// ── Receive stock ──────────────────────────────────────────────────────────
+// \u2500\u2500 Receive stock \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let deliveryHistory = [];
 
 function renderReceiveGrid(){
@@ -1127,7 +1127,7 @@ function renderReceiveGrid(){
   grid.innerHTML = STOCK.map(s => `
     <div class="recv-item-row">
       <div class="recv-item-name">${s.n}</div>
-      <div class="recv-item-stock">In stock: <strong>${s.qty}</strong> &nbsp;·&nbsp; Min: <strong>${thresholds[s.n]||12}</strong></div>
+      <div class="recv-item-stock">In stock: <strong>${s.qty}</strong> &nbsp;\u00b7&nbsp; Min: <strong>${thresholds[s.n]||12}</strong></div>
       <div class="recv-item-input-row">
         <input type="number" min="0" placeholder="0" id="recv-qty-${s.n.replace(/[^a-zA-Z0-9]/g,'_')}"
           oninput="document.getElementById('recv-preview-card').style.display='none';document.getElementById('recv-confirm-btn').style.display='none'">
@@ -1182,7 +1182,7 @@ function confirmReceive(){
   items.forEach(r => {
     r.stock.qty += r.qty;
     r.stock.last = date.split('-').reverse().join('/');
-    summary.push(r.stock.n + ' ×' + r.qty);
+    summary.push(r.stock.n + ' \u00d7' + r.qty);
   });
 
   // Log delivery
@@ -1196,7 +1196,7 @@ function confirmReceive(){
   renderDashboard();
   if(document.getElementById('page-stock').classList.contains('active')) renderStock();
 
-  alert('✓ Stock updated!\n\n' + summary.join('\n') + '\n\nWarehouse records have been updated.');
+  alert('\u2713 Stock updated!\n\n' + summary.join('\n') + '\n\nWarehouse records have been updated.');
   clearReceive();
 }
 
@@ -1227,9 +1227,9 @@ function renderDeliveryHistory(){
     </tr>
   `).join('');
 }
-// ───────────────────────────────────────────────────────────────────────────
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
-// ── PPE item name mapping (signout form → TEAM_PPE_DATA key) ──
+// \u2500\u2500 PPE item name mapping (signout form \u2192 TEAM_PPE_DATA key) \u2500\u2500
 const PPE_ITEM_MAP = {
   'Visibility vest':       'VISIBILITY VEST',
   'Work trouser':          'TROUSER',
@@ -1350,7 +1350,7 @@ function _doSubmitSignout(name,team,date,site,items,sigImg){
   renderDashboard();
   // Refresh team PPE page if it's currently visible
   if(document.getElementById('page-teamppe').classList.contains('active')) renderTeamPPE();
-  alert(`✓ Sign-out recorded for ${name} \u2014 ${items.length} item(s) logged.\n\nWarehouse stock and team PPE counts have been updated.`);
+  alert(`\u2713 Sign-out recorded for ${name} \u2014 ${items.length} item(s) logged.\n\nWarehouse stock and team PPE counts have been updated.`);
   clearForm();
 }
 function clearForm(){document.getElementById('so-team').value='';document.getElementById('so-name').innerHTML='<option>Select team first...</option>';document.getElementById('so-date').value=new Date().toISOString().split('T')[0];document.getElementById('so-site').value='';clearSig();renderPPEForm();_submitting=false;}
@@ -1383,7 +1383,7 @@ function renderTeamPPE(){
     html += `<div class="card" style="margin-bottom:18px;padding:0;overflow:hidden">
       <div style="padding:10px 14px;background:var(--dark2);display:flex;align-items:center;justify-content:space-between">
         <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;text-transform:uppercase;letter-spacing:0.07em;color:var(--yellow)">${teamName}</span>
-        <span style="font-size:11px;color:rgba(255,255,255,0.4)">${members.length} members · ${allItems.length} PPE items tracked</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.4)">${members.length} members \u00b7 ${allItems.length} PPE items tracked</span>
       </div>
       <div style="overflow-x:auto">
       <table class="ppe-year-table">
@@ -1428,7 +1428,7 @@ function renderTeamPPE(){
   container.innerHTML = html || '<div style="color:var(--grey);padding:20px;text-align:center">No data available.</div>';
 }
 
-function renderLog(){const s=(document.getElementById('log-search')?.value||'').toLowerCase();const t=document.getElementById('log-team')?.value||'';const d=document.getElementById('log-date')?.value||'';const f=signouts.filter(r=>(!s||r.name.toLowerCase().includes(s)||r.item.toLowerCase().includes(s))&&(!t||r.team===t)&&(!d||r.date===d));const tbody=document.getElementById('log-tbody');if(!f.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr>';return;}tbody.innerHTML=f.slice().reverse().map(r=>`<tr><td>${r.date}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="background:${r.team==='Site'?'#e8f0fb':'var(--yellow)'};color:${r.team==='Site'?'#185fa5':'var(--dark)'}">${r.team==='Site'?'📍':r.name.substring(0,2).toUpperCase()}</div>${r.name}${r.team==='Site'?'<span class="site-log-badge">SITE</span>':''}</div></td><td style="color:var(--grey)">${r.team==='Site'?r.site||'\u2014':r.team}</td><td>${r.item}</td><td>${r.size}</td><td style="font-weight:700">${r.qty}</td><td>${r.sig?`<img src="${r.sig}" style="height:32px;max-width:80px;border:1px solid var(--border);border-radius:3px;background:#fff;display:block" title="Signature">`:'<span style="color:var(--red);font-size:10px">No sig</span>'}</td></tr>`).join('');}
+function renderLog(){const s=(document.getElementById('log-search')?.value||'').toLowerCase();const t=document.getElementById('log-team')?.value||'';const d=document.getElementById('log-date')?.value||'';const f=signouts.filter(r=>(!s||r.name.toLowerCase().includes(s)||r.item.toLowerCase().includes(s))&&(!t||r.team===t)&&(!d||r.date===d));const tbody=document.getElementById('log-tbody');if(!f.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr>';return;}tbody.innerHTML=f.slice().reverse().map(r=>`<tr><td>${r.date}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="background:${r.team==='Site'?'#e8f0fb':'var(--yellow)'};color:${r.team==='Site'?'#185fa5':'var(--dark)'}">${r.team==='Site'?'\u1f4cd':r.name.substring(0,2).toUpperCase()}</div>${r.name}${r.team==='Site'?'<span class="site-log-badge">SITE</span>':''}</div></td><td style="color:var(--grey)">${r.team==='Site'?r.site||'\u2014':r.team}</td><td>${r.item}</td><td>${r.size}</td><td style="font-weight:700">${r.qty}</td><td>${r.sig?`<img src="${r.sig}" style="height:32px;max-width:80px;border:1px solid var(--border);border-radius:3px;background:#fff;display:block" title="Signature">`:'<span style="color:var(--red);font-size:10px">No sig</span>'}</td></tr>`).join('');}
 
 function setThreshold(itemName, val){
   const v = Math.max(1, parseInt(val)||1);
@@ -1476,13 +1476,13 @@ function renderReorder(skipGrid){
   }
 }
 function updateReorderBadge(){const c=getLow().length;const b=document.getElementById('reorder-badge');b.textContent=c>0?c:'';b.style.display=c>0?'inline-flex':'none';document.getElementById('dash-reorder-val').textContent=c;}
-function renderDashboard(){const low=getLow();document.getElementById('dash-alert-banner').innerHTML=low.length>0?`<div class="notice notice-warn">&#9888; ${low.length} PPE item${low.length>1?'s':''} need reordering. <button class="btn btn-sm" onclick="nav(null,'reorder')" style="margin-left:8px">View</button></div>`:'';document.getElementById('dash-reorder-badge').textContent=low.length>0?low.length+' items':'All OK';document.getElementById('dash-reorder-badge').className='badge '+(low.length>0?'b-danger':'b-ok');document.getElementById('dash-reorder-list').innerHTML=low.length===0?'<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">&#10003; All stock levels OK</div>':low.slice(0,5).map(s=>`<div class="log-row"><div class="log-dot" style="background:${s.qty<=(thresholds[s.n]||12)*0.4?'var(--red)':'var(--orange)'}"></div><div><div class="log-text"><strong>${s.n}</strong> \u2014 ${s.qty} remaining</div><div class="log-time">Min: ${thresholds[s.n]||12} · Suggest ordering ${(thresholds[s.n]||12)*2-s.qty} units</div></div></div>`).join('');updateDashLog();const cats=[...new Set(STOCK.map(s=>s.cat))];document.getElementById('stock-overview').innerHTML=cats.map(cat=>{const items=STOCK.filter(s=>s.cat===cat);const total=items.reduce((a,b)=>a+b.qty,0);const nlow=items.filter(s=>s.qty<=(thresholds[s.n]||12)).length;const cls=nlow>0?(nlow>=items.length*0.5?'ov-low':'ov-warn'):'ov-ok';return`<div class="ov-card ${cls}"><div class="ov-label">${cat}</div><div class="ov-val">${total}</div><div class="ov-sub">${items.length} variants${nlow>0?` · <span style="color:var(--red)">${nlow} low</span>`:' · All OK'}</div></div>`;}).join('');}
-function updateDashLog(){const el=document.getElementById('dash-log');if(!signouts.length){el.innerHTML='<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">No sign-outs yet.</div>';return;}el.innerHTML=signouts.slice(-4).reverse().map(s=>`<div class="log-row"><div class="log-dot" style="background:var(--red)"></div><div><div class="log-text">${s.item} \u2014 ${s.name}</div><div class="log-time">${s.date} · ${s.team} · ${s.site}</div></div></div>`).join('');}
+function renderDashboard(){const low=getLow();document.getElementById('dash-alert-banner').innerHTML=low.length>0?`<div class="notice notice-warn">&#9888; ${low.length} PPE item${low.length>1?'s':''} need reordering. <button class="btn btn-sm" onclick="nav(null,'reorder')" style="margin-left:8px">View</button></div>`:'';document.getElementById('dash-reorder-badge').textContent=low.length>0?low.length+' items':'All OK';document.getElementById('dash-reorder-badge').className='badge '+(low.length>0?'b-danger':'b-ok');document.getElementById('dash-reorder-list').innerHTML=low.length===0?'<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">&#10003; All stock levels OK</div>':low.slice(0,5).map(s=>`<div class="log-row"><div class="log-dot" style="background:${s.qty<=(thresholds[s.n]||12)*0.4?'var(--red)':'var(--orange)'}"></div><div><div class="log-text"><strong>${s.n}</strong> \u2014 ${s.qty} remaining</div><div class="log-time">Min: ${thresholds[s.n]||12} \u00b7 Suggest ordering ${(thresholds[s.n]||12)*2-s.qty} units</div></div></div>`).join('');updateDashLog();const cats=[...new Set(STOCK.map(s=>s.cat))];document.getElementById('stock-overview').innerHTML=cats.map(cat=>{const items=STOCK.filter(s=>s.cat===cat);const total=items.reduce((a,b)=>a+b.qty,0);const nlow=items.filter(s=>s.qty<=(thresholds[s.n]||12)).length;const cls=nlow>0?(nlow>=items.length*0.5?'ov-low':'ov-warn'):'ov-ok';return`<div class="ov-card ${cls}"><div class="ov-label">${cat}</div><div class="ov-val">${total}</div><div class="ov-sub">${items.length} variants${nlow>0?` \u00b7 <span style="color:var(--red)">${nlow} low</span>`:' \u00b7 All OK'}</div></div>`;}).join('');}
+function updateDashLog(){const el=document.getElementById('dash-log');if(!signouts.length){el.innerHTML='<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">No sign-outs yet.</div>';return;}el.innerHTML=signouts.slice(-4).reverse().map(s=>`<div class="log-row"><div class="log-dot" style="background:var(--red)"></div><div><div class="log-text">${s.item} \u2014 ${s.name}</div><div class="log-time">${s.date} \u00b7 ${s.team} \u00b7 ${s.site}</div></div></div>`).join('');}
 
 
 
 
-// ── Team & PPE Management ──────────────────────────────────────────────────
+// \u2500\u2500 Team & PPE Management \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function switchManageTab(tab){
   document.querySelectorAll('#manage-tabs .tab').forEach((t,i)=>{
     t.classList.toggle('active', (i===0&&tab==='members')||(i===1&&tab==='ppe'));
@@ -1493,7 +1493,7 @@ function switchManageTab(tab){
   if(tab==='ppe') renderPPEManageList();
 }
 
-// ── MEMBER MANAGEMENT ─────────────────────────────────────────────────────
+// \u2500\u2500 MEMBER MANAGEMENT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function addMember(){
   const name = document.getElementById('mgmt-member-name').value.trim();
   const initials = document.getElementById('mgmt-member-initials').value.trim().toUpperCase();
@@ -1523,7 +1523,7 @@ function addMember(){
   refreshSignoutDropdowns();
   // Reload from DB after short delay to confirm sync
   setTimeout(()=>{ if(typeof loadMembersFromDB==='function') loadMembersFromDB(); }, 1000);
-  alert(`✓ ${displayName} added to ${team}.`);
+  alert(`\u2713 ${displayName} added to ${team}.`);
 }
 
 function renderMoveMembers(){
@@ -1561,7 +1561,7 @@ function moveMember(){
   renderMoveMembers();
   renderRoster();
   refreshSignoutDropdowns();
-  alert(`✓ ${member} moved from ${fromTeam} to ${toTeam}.`);
+  alert(`\u2713 ${member} moved from ${fromTeam} to ${toTeam}.`);
 }
 
 function removeMemberFromTeam(team, member){
@@ -1591,7 +1591,7 @@ function renderRoster(){
             <div class="avatar">${m.substring(0,2).toUpperCase()}</div>
             <span style="font-size:13px">${m}</span>
           </div>
-          <button class="ppe-remove-btn" onclick="removeMemberFromTeam('${team.replace(/'/g,"\\'")}','${m.replace(/'/g,"\\'")}')">×</button>
+          <button class="ppe-remove-btn" onclick="removeMemberFromTeam('${team.replace(/'/g,"\\'")}','${m.replace(/'/g,"\\'")}')">\u00d7</button>
         </div>`).join('')}
     </div>`;
   }).join('');
@@ -1614,7 +1614,7 @@ function loadMembersFromStorage(){
         Object.keys(saved).forEach(team=>{
           if(saved[team] && saved[team].length > 0) MEMBERS[team] = saved[team];
         });
-        console.log('✓ Members loaded from localStorage (offline mode)');
+        console.log('\u2713 Members loaded from localStorage (offline mode)');
       }
     }
   }catch(e){}
@@ -1637,7 +1637,7 @@ function refreshAllTeamDropdowns(){
   }
 }
 
-// ── PPE ITEM MANAGEMENT ────────────────────────────────────────────────────
+// \u2500\u2500 PPE ITEM MANAGEMENT \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function addPPEItem(){
   const name   = document.getElementById('mgmt-ppe-name').value.trim();
   const cat    = document.getElementById('mgmt-ppe-cat').value;
@@ -1669,7 +1669,7 @@ function addPPEItem(){
   renderPPEManageList();
   renderPPEForm();
   updateReorderBadge();
-  alert(`✓ "${name}" added to PPE list and warehouse stock.`);
+  alert(`\u2713 "${name}" added to PPE list and warehouse stock.`);
 }
 
 function removePPEItem(){
@@ -1688,7 +1688,7 @@ function removePPEItem(){
   renderPPEManageList();
   renderPPEForm();
   updateReorderBadge();
-  alert(`✓ "${name}" removed from the PPE list.`);
+  alert(`\u2713 "${name}" removed from the PPE list.`);
 }
 
 function renderPPEManageList(){
@@ -1702,9 +1702,9 @@ function renderPPEManageList(){
     return `<div class="ppe-list-item">
       <div>
         <div style="font-size:12px;font-weight:500">${item}</div>
-        <div style="font-size:10px;color:var(--grey)">${stock?stock.cat:'\u2014'} · ${stock?stock.qty:0} in stock</div>
+        <div style="font-size:10px;color:var(--grey)">${stock?stock.cat:'\u2014'} \u00b7 ${stock?stock.qty:0} in stock</div>
       </div>
-      <button class="ppe-remove-btn" onclick="quickRemovePPE('${item.replace(/'/g,"\\'")}')">×</button>
+      <button class="ppe-remove-btn" onclick="quickRemovePPE('${item.replace(/'/g,"\\'")}')">\u00d7</button>
     </div>`;
   }).join('');
 
@@ -1734,14 +1734,14 @@ function loadPPEItemsFromStorage(){
       if(saved && saved.length > 0){
         PPE_ITEMS.length = 0;
         saved.forEach(item => PPE_ITEMS.push(item));
-        console.log('✓ PPE items loaded from localStorage (offline mode)');
+        console.log('\u2713 PPE items loaded from localStorage (offline mode)');
       }
     }
   }catch(e){}
 }
-// ──────────────────────────────────────────────────────────────────────────
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
-// ── Site sign-out management ───────────────────────────────────────────────
+// \u2500\u2500 Site sign-out management \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let savedSites = [
   'Installations', 'RES Warehouse', 'Pretoria site',
   'Johannesburg site', 'Cape Town site'
@@ -1810,9 +1810,9 @@ function getSiteRecipientName(){
   if(!isSiteMode()) return document.getElementById('so-name')?.value || '';
   return document.getElementById('so-site-name')?.value || '';
 }
-// ──────────────────────────────────────────────────────────────────────────
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
-// ── Duplicate sign-out warning system ─────────────────────────────────────
+// \u2500\u2500 Duplicate sign-out warning system \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 let WARN_DAYS = 30; // warn if same item signed out within this many days \u2014 adjustable
 
 function daysBetween(dateStr1, dateStr2){
@@ -1856,7 +1856,7 @@ function checkRowWarning(itemName, k){
     const badge = document.createElement('span');
     badge.className = 'ppe-warn-badge';
     badge.title = `Last signed out ${w.days} day${w.days>1?'s':''} ago on ${w.prevDate}`;
-    badge.innerHTML = `⚠ ${w.days}d ago`;
+    badge.innerHTML = `\u26a0 ${w.days}d ago`;
     badge.onclick = (e) => {
       e.stopPropagation();
       showWarnModal([w], memberName, ()=>{}, ()=>{});
@@ -1915,8 +1915,8 @@ function showWarnModal(warnings, memberName, onProceed, onCancel){
       </div>
       <div class="warn-item-detail">
         Previously signed out: <strong>${w.prevQty} unit${w.prevQty>1?'s':''}</strong>
-        ${w.prevSize && w.prevSize !== '\u2014' ? '· Size ' + w.prevSize : ''}
-        · ${w.prevDate} · ${w.prevSite}
+        ${w.prevSize && w.prevSize !== '\u2014' ? '\u00b7 Size ' + w.prevSize : ''}
+        \u00b7 ${w.prevDate} \u00b7 ${w.prevSite}
       </div>
     </div>
   `).join('');
@@ -1926,8 +1926,8 @@ function showWarnModal(warnings, memberName, onProceed, onCancel){
       <div class="warn-modal-header">
         <div class="accent"></div>
         <div>
-          <div class="warn-modal-title">⚠ Recent sign-out detected</div>
-          <div class="warn-modal-sub">${cleanName} · ${warnings.length} item${warnings.length>1?'s':''} signed out within the last ${WARN_DAYS} days</div>
+          <div class="warn-modal-title">\u26a0 Recent sign-out detected</div>
+          <div class="warn-modal-sub">${cleanName} \u00b7 ${warnings.length} item${warnings.length>1?'s':''} signed out within the last ${WARN_DAYS} days</div>
         </div>
       </div>
       <div class="warn-modal-body">
@@ -1950,12 +1950,12 @@ function showWarnModal(warnings, memberName, onProceed, onCancel){
   overlay.addEventListener('click', e => { if(e.target===overlay){ document.body.removeChild(overlay); onCancel(); }});
 }
 
-// ── Period selector for warnings ──────────────────────────────────────────
+// \u2500\u2500 Period selector for warnings \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 function setWarnPeriod(days){
   // Called from the settings (future use) or inline
   window.WARN_DAYS = days;
 }
-// ──────────────────────────────────────────────────────────────────────────
+// \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
 function exportStockExcel(){
   const now = new Date();
@@ -1980,7 +1980,7 @@ function exportStockExcel(){
       <td colspan="6" style="background:#3f3f40;color:#fddd00;font-weight:700;font-size:11px;
         padding:7px 12px;letter-spacing:1px;font-family:Calibri,sans-serif">${cat.toUpperCase()}
         <span style="float:right;color:rgba(255,255,255,0.5);font-size:9px;font-weight:400">
-          ${items.length} variants · ${catTotal} units total
+          ${items.length} variants \u00b7 ${catTotal} units total
         </span>
       </td>
     </tr>`;
@@ -1991,7 +1991,7 @@ function exportStockExcel(){
       const isCrit = s.qty <= t*0.4;
       const bg = isCrit ? '#fdeaea' : isLow ? '#fffde6' : i%2===0 ? '#ffffff' : '#f9f8f5';
       const qtyColor = isCrit ? '#a32d2d' : isLow ? '#a06000' : '#1a1a1a';
-      const statusText = isCrit ? '⚠ CRITICAL' : isLow ? '↓ REORDER' : '✓ OK';
+      const statusText = isCrit ? '\u26a0 CRITICAL' : isLow ? '\u2193 REORDER' : '\u2713 OK';
       const statusColor = isCrit ? '#a32d2d' : isLow ? '#a06000' : '#27ae60';
       const statusBg = isCrit ? '#fdeaea' : isLow ? '#fffde6' : '#e8f8ef';
       if(isLow) lowCount++;
@@ -2107,8 +2107,8 @@ function exportStockExcel(){
   <tr>
     <td style="padding:10px 22px;text-align:center;color:rgba(255,255,255,0.2);
       font-size:8pt;letter-spacing:1px">
-      RHINO ENERGY SOLUTIONS &nbsp;·&nbsp; SOLAR. ENERGY. EXCELLENCE. &nbsp;·&nbsp;
-      PPE Management System &nbsp;·&nbsp; ${dateStr}
+      RHINO ENERGY SOLUTIONS &nbsp;\u00b7&nbsp; SOLAR. ENERGY. EXCELLENCE. &nbsp;\u00b7&nbsp;
+      PPE Management System &nbsp;\u00b7&nbsp; ${dateStr}
     </td>
   </tr>
 </table>
@@ -2130,7 +2130,7 @@ function _generatePDF(reportHtml, elId, filename){
   const loadEl=document.createElement('div');
   loadEl.id='pdf-loading-overlay';
   loadEl.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(42,42,42,0.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fddd00;font-family:"Barlow Condensed",sans-serif;letter-spacing:2px;font-size:16px';
-  loadEl.innerHTML='<div style="font-size:32px;margin-bottom:12px;animation:spin 1s linear infinite">↓</div><div>GENERATING PDF...</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;letter-spacing:1px">Please wait</div>';
+  loadEl.innerHTML='<div style="font-size:32px;margin-bottom:12px;animation:spin 1s linear infinite">\u2193</div><div>GENERATING PDF...</div><div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:6px;letter-spacing:1px">Please wait</div>';
   document.body.appendChild(loadEl);
   const el=container.querySelector('#'+elId);
   html2canvas(el,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#f4f3f0',logging:false})
@@ -2179,7 +2179,7 @@ function exportLog(){
     const dayRows=byDate[d];
     const dayTotal=dayRows.reduce((s,r)=>s+r.qty,0);
     const dayLabel=new Date(d+'T12:00:00').toLocaleDateString('en-ZA',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
-    rowsHtml+=`<tr><td colspan="8" style="background:#3f3f40;color:#fddd00;font-weight:700;font-size:11px;padding:7px 12px;letter-spacing:0.5px">${dayLabel}<span style="float:right;color:rgba(255,255,255,0.55);font-size:9px;font-weight:400">${dayRows.length} record${dayRows.length>1?'s':''} · ${dayTotal} unit${dayTotal>1?'s':''} issued</span></td></tr>`;
+    rowsHtml+=`<tr><td colspan="8" style="background:#3f3f40;color:#fddd00;font-weight:700;font-size:11px;padding:7px 12px;letter-spacing:0.5px">${dayLabel}<span style="float:right;color:rgba(255,255,255,0.55);font-size:9px;font-weight:400">${dayRows.length} record${dayRows.length>1?'s':''} \u00b7 ${dayTotal} unit${dayTotal>1?'s':''} issued</span></td></tr>`;
     dayRows.forEach((r,i)=>{
       const bg=i%2===0?'#ffffff':'#f9f8f5';
       const sigHtml=r.sig?`<img src="${r.sig}" style="height:28px;max-width:80px;display:block;margin:auto">`:`<span style="color:#c0392b;font-size:8px;font-style:italic">No sig</span>`;
@@ -2243,7 +2243,7 @@ function exportLog(){
     </table></div>
     <div style="background:#2a2a2a"><div style="height:3px;background:#fddd00"></div>
     <div style="padding:8px 20px;text-align:center;color:rgba(255,255,255,0.2);font-size:7px;letter-spacing:1.5px">
-      RHINO ENERGY SOLUTIONS · SOLAR. ENERGY. EXCELLENCE. · PPE MANAGEMENT SYSTEM · ${dateStr}
+      RHINO ENERGY SOLUTIONS \u00b7 SOLAR. ENERGY. EXCELLENCE. \u00b7 PPE MANAGEMENT SYSTEM \u00b7 ${dateStr}
     </div></div>
   </div>`;
   _generatePDF(reportHtml,'res-pdf-log','RES_PPE_SignOut_Log_'+now.toISOString().split('T')[0]+'.pdf');
@@ -2303,7 +2303,7 @@ function exportReorder(){
     </table></div>
     <div style="background:#2a2a2a"><div style="height:3px;background:#fddd00"></div>
     <div style="padding:8px 20px;text-align:center;color:rgba(255,255,255,0.2);font-size:7px;letter-spacing:1.5px">
-      RHINO ENERGY SOLUTIONS · SOLAR. ENERGY. EXCELLENCE. · ${dateStr}
+      RHINO ENERGY SOLUTIONS \u00b7 SOLAR. ENERGY. EXCELLENCE. \u00b7 ${dateStr}
     </div></div>
   </div>`;
   _generatePDF(reportHtml,'res-pdf-reorder','RES_Reorder_List_'+now.toISOString().split('T')[0]+'.pdf');
