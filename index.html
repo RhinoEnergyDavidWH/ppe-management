@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#2a2a2a">
-  <title>Rhino Energy — PPE Management System</title>
+  <title>Rhino Energy &#8212; PPE Management System</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -212,7 +212,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // ── SUPABASE CONFIG — fill these in after creating your project ──
+    // ── SUPABASE CONFIG \u2014 fill these in after creating your project ──
     const SUPABASE_URL = 'https://ryxqrwwyxqvueixapivx.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5eHFyd3d5eHF2dWVpeGFwaXZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0ODIxMjgsImV4cCI6MjA5NjA1ODEyOH0.Dp1vEt4Oinr4h_g0AnPui47RWRSxrWBpuSTj8HsywB4';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -255,7 +255,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         const mci = document.getElementById('member-count-indicator');
         if(mci) mci.textContent = totalMembers + ' members · ' + PPE_ITEMS.length + ' PPE items';
       } catch(e) {
-        console.warn('Supabase not configured yet — running in local mode:', e.message);
+        console.warn('Supabase not configured yet \u2014 running in local mode:', e.message);
         syncStatus = 'local';
         setSyncIndicator('local');
       }
@@ -265,10 +265,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       const el = document.getElementById('sync-indicator');
       if(!el) return;
       const cfg = {
-        online: {color:'#27ae60', text:'● Live sync on',   title:'Connected — all changes sync across devices'},
-        local:  {color:'#e67e22', text:'○ Local mode',     title:'Supabase not configured — changes are local only'},
+        online: {color:'#27ae60', text:'● Live sync on',   title:'Connected \u2014 all changes sync across devices'},
+        local:  {color:'#e67e22', text:'○ Local mode',     title:'Supabase not configured \u2014 changes are local only'},
         saving: {color:'#fddd00', text:'↑ Saving...',      title:'Writing to database'},
-        error:  {color:'#c0392b', text:'✕ Sync error',     title:'Could not save — check connection'},
+        error:  {color:'#c0392b', text:'✕ Sync error',     title:'Could not save \u2014 check connection'},
       };
       const c = cfg[status] || cfg.local;
       el.style.color = c.color;
@@ -379,7 +379,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       try {
         const { count } = await sb.from('members').select('*', {count:'exact',head:true});
         if(count === 0){
-          console.log('Members table empty — seeding from defaults...');
+          console.log('Members table empty \u2014 seeding from defaults...');
           const rows = [];
           Object.keys(MEMBERS).forEach(team => {
             (MEMBERS[team]||[]).forEach(name => {
@@ -391,7 +391,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
             console.log('✓ Seeded', rows.length, 'members to Supabase');
           }
         } else {
-          console.log('Members table has', count, 'rows — no seed needed');
+          console.log('Members table has', count, 'rows \u2014 no seed needed');
         }
       } catch(e){ console.warn('seedMembersIfEmpty error:', e.message); }
     }
@@ -401,12 +401,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       try {
         const { count } = await sb.from('ppe_items').select('*', {count:'exact',head:true});
         if(count === 0){
-          console.log('PPE items table empty — seeding from defaults...');
+          console.log('PPE items table empty \u2014 seeding from defaults...');
           const rows = PPE_ITEMS.map((name,i) => ({name, category:'Other', sort_order:i+1, active:true}));
           await sb.from('ppe_items').upsert(rows, {onConflict:'name'});
           console.log('✓ Seeded', rows.length, 'PPE items to Supabase');
         } else {
-          console.log('PPE items table has', count, 'rows — no seed needed');
+          console.log('PPE items table has', count, 'rows \u2014 no seed needed');
         }
       } catch(e){ console.warn('seedPPEItemsIfEmpty error:', e.message); }
     }
@@ -427,7 +427,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
             saveMembersToStorage();
             console.log('✓ Members loaded from Supabase:', data.length, 'members');
           } else {
-            console.warn('⚠ Supabase members table empty — using hardcoded defaults');
+            console.warn('⚠ Supabase members table empty \u2014 using hardcoded defaults');
           }
           // Refresh all dropdowns that use member lists
           refreshSignoutDropdowns();
@@ -470,7 +470,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
     async function deleteMemberFromDB(name, team){
       if(!DB_READY) return;
       try {
-        // Soft delete — set active = false
+        // Soft delete \u2014 set active = false
         await sb.from('members').update({active: false, updated_at: new Date().toISOString()}).eq('name', name).eq('team', team);
       } catch(e){ console.error('deleteMemberFromDB error:', e); }
     }
@@ -506,7 +506,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         .subscribe();
     }
 
-    // ── REALTIME — listen for changes from other devices ───────
+    // ── REALTIME \u2014 listen for changes from other devices ───────
     function setupRealtimeSync(){
       sb.channel('stock-changes')
         .on('postgres_changes', {event:'*', schema:'public', table:'stock'}, payload => {
@@ -524,7 +524,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
             _localPushedSignouts.delete(fingerprint);
             return;
           }
-          // This came from another device — add it
+          // This came from another device \u2014 add it
           signouts.unshift({date:r.date, name:r.member_name, team:r.team,
             item:r.item, size:r.size, qty:r.qty, site:r.site, sig:r.signature_url});
           document.getElementById('dash-so-count').textContent = signouts.length;
@@ -620,7 +620,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
       <div class="content">
         <div class="card"><div class="card-header"><span class="card-title">Team member details</span></div>
           <div class="form-grid">
-            <div class="form-group"><label>Team</label><select id="so-team" onchange="onTeamChange()"><option value="">Select team...</option><option>Team 1 — KG</option><option>Team 2 — Thulani</option><option>Team 3 — Sipho</option><option>Team 4 — Frans</option><option>Team 5 — Jacques</option><option>Team 6 — Justinos</option><option>Team 7 — Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option disabled style="color:var(--border)">──────────</option><option value="Site">📍 Site sign-out</option></select></div>
+            <div class="form-group"><label>Team</label><select id="so-team" onchange="onTeamChange()"><option value="">Select team...</option><option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option><option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option><option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option><option>Team 7 &#8212; Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option disabled style="color:var(--border)">──────────</option><option value="Site">📍 Site sign-out</option></select></div>
             <div class="form-group" id="name-group-member">
               <label>Name</label>
               <select id="so-name"><option value="">Select team first...</option></select>
@@ -654,7 +654,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
           <div class="ppe-list" id="ppe-form-list"></div>
         </div>
         <div class="card">
-          <div class="card-header"><span class="card-title">Recipient signature</span><span style="font-size:11px;color:var(--grey)">Required — draw signature in the box below</span></div>
+          <div class="card-header"><span class="card-title">Recipient signature</span><span style="font-size:11px;color:var(--grey)">Required &#8212; draw signature in the box below</span></div>
           <div class="sig-pad-wrap" id="sig-pad-wrap">
             <canvas class="sig-canvas" id="sig-canvas"></canvas>
             <div class="sig-toolbar">
@@ -695,9 +695,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         <div class="filter-row">
           <select id="team-sel" onchange="renderTeamPPE()">
             <option value="all">All teams</option>
-            <option>Team 1 — KG</option><option>Team 2 — Thulani</option><option>Team 3 — Sipho</option>
-            <option>Team 4 — Frans</option><option>Team 5 — Jacques</option><option>Team 6 — Justinos</option>
-            <option>Team 7 — Piet</option><option>O&M Francois</option><option>O&M Steven</option>
+            <option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option><option>Team 3 &#8212; Sipho</option>
+            <option>Team 4 &#8212; Frans</option><option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option>
+            <option>Team 7 &#8212; Piet</option><option>O&M Francois</option><option>O&M Steven</option>
             <option>Management / Warehouse</option>
           </select>
         </div>
@@ -706,7 +706,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
     </div>
     <div class="page" id="page-log">
       <div class="topbar"><h1>Sign-out log</h1><div class="topbar-actions"><button class="btn btn-dark" onclick="exportLog()">&#8659; Export PDF</button></div></div>
-      <div class="content"><div class="filter-row"><input type="text" placeholder="Search name or item..." id="log-search" oninput="renderLog()"><select id="log-team" onchange="renderLog()"><option value="">All teams</option><option>Team 1 — KG</option><option>Team 2 — Thulani</option><option>Team 3 — Sipho</option><option>Team 4 — Frans</option><option>Team 5 — Jacques</option><option>Team 6 — Justinos</option><option>Team 7 — Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option value="Site">📍 Site sign-outs</option></select><input type="date" id="log-date" onchange="renderLog()" style="max-width:150px"></div>
+      <div class="content"><div class="filter-row"><input type="text" placeholder="Search name or item..." id="log-search" oninput="renderLog()"><select id="log-team" onchange="renderLog()"><option value="">All teams</option><option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option><option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option><option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option><option>Team 7 &#8212; Piet</option><option>O&M Francois</option><option>O&M Steven</option><option>Students</option><option>Management / Warehouse</option><option value="Site">📍 Site sign-outs</option></select><input type="date" id="log-date" onchange="renderLog()" style="max-width:150px"></div>
         <div class="card" style="padding:0;overflow:hidden"><table><thead><tr><th style="width:12%">Date</th><th style="width:18%">Name</th><th style="width:14%">Team</th><th style="width:20%">Item</th><th style="width:8%">Size</th><th style="width:6%">Qty</th><th style="width:10%">Site</th><th style="width:12%">Signature</th></tr></thead><tbody id="log-tbody"><tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr></tbody></table></div>
       </div>
     </div>
@@ -755,14 +755,14 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         <div class="card">
           <div class="card-header">
             <span class="card-title">Items received</span>
-            <span style="font-size:11px;color:var(--grey)">Enter qty received for each item — leave blank or 0 to skip</span>
+            <span style="font-size:11px;color:var(--grey)">Enter qty received for each item &#8212; leave blank or 0 to skip</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0" id="recv-items-grid"></div>
         </div>
 
         <div class="card" id="recv-preview-card" style="display:none">
           <div class="card-header">
-            <span class="card-title">Preview — stock after this delivery</span>
+            <span class="card-title">Preview &#8212; stock after this delivery</span>
             <span class="badge b-info" id="recv-preview-count"></span>
           </div>
           <div class="card" style="padding:0;overflow:hidden;margin-bottom:0">
@@ -822,10 +822,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
                 <label>Assign to team</label>
                 <select id="mgmt-member-team">
                   <option value="">Select team...</option>
-                  <option>Team 1 — KG</option><option>Team 2 — Thulani</option>
-                  <option>Team 3 — Sipho</option><option>Team 4 — Frans</option>
-                  <option>Team 5 — Jacques</option><option>Team 6 — Justinos</option>
-                  <option>Team 7 — Piet</option><option>O&M Francois</option>
+                  <option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option>
+                  <option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option>
+                  <option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option>
+                  <option>Team 7 &#8212; Piet</option><option>O&M Francois</option>
                   <option>O&M Steven</option><option>Students</option>
                   <option>Management / Warehouse</option>
                 </select>
@@ -840,10 +840,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
                 <label>Current team</label>
                 <select id="mgmt-from-team" onchange="renderMoveMembers()">
                   <option value="">Select team...</option>
-                  <option>Team 1 — KG</option><option>Team 2 — Thulani</option>
-                  <option>Team 3 — Sipho</option><option>Team 4 — Frans</option>
-                  <option>Team 5 — Jacques</option><option>Team 6 — Justinos</option>
-                  <option>Team 7 — Piet</option><option>O&M Francois</option>
+                  <option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option>
+                  <option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option>
+                  <option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option>
+                  <option>Team 7 &#8212; Piet</option><option>O&M Francois</option>
                   <option>O&M Steven</option><option>Students</option>
                   <option>Management / Warehouse</option>
                 </select>
@@ -856,10 +856,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
                 <label>Move to team</label>
                 <select id="mgmt-to-team">
                   <option value="">Select team...</option>
-                  <option>Team 1 — KG</option><option>Team 2 — Thulani</option>
-                  <option>Team 3 — Sipho</option><option>Team 4 — Frans</option>
-                  <option>Team 5 — Jacques</option><option>Team 6 — Justinos</option>
-                  <option>Team 7 — Piet</option><option>O&M Francois</option>
+                  <option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option>
+                  <option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option>
+                  <option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option>
+                  <option>Team 7 &#8212; Piet</option><option>O&M Francois</option>
                   <option>O&M Steven</option><option>Students</option>
                   <option>Management / Warehouse</option>
                 </select>
@@ -874,10 +874,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
               <span class="card-title">Current team roster</span>
               <select id="mgmt-view-team" onchange="renderRoster()" style="height:30px;font-size:12px;width:auto;padding:0 8px">
                 <option value="all">All teams</option>
-                <option>Team 1 — KG</option><option>Team 2 — Thulani</option>
-                <option>Team 3 — Sipho</option><option>Team 4 — Frans</option>
-                <option>Team 5 — Jacques</option><option>Team 6 — Justinos</option>
-                <option>Team 7 — Piet</option><option>O&M Francois</option>
+                <option>Team 1 &#8212; KG</option><option>Team 2 &#8212; Thulani</option>
+                <option>Team 3 &#8212; Sipho</option><option>Team 4 &#8212; Frans</option>
+                <option>Team 5 &#8212; Jacques</option><option>Team 6 &#8212; Justinos</option>
+                <option>Team 7 &#8212; Piet</option><option>O&M Francois</option>
                 <option>O&M Steven</option><option>Students</option>
                 <option>Management / Warehouse</option>
               </select>
@@ -959,7 +959,7 @@ let thresholds={};STOCK.forEach(s=>{
   else if(s.n.includes('Ear plug')) thresholds[s.n]=200;
   else thresholds[s.n]=12;
 });
-const MEMBERS={'Team 1 — KG':['Katlego (KB)','Alfred (AM)','Roberto (RS)','Michael (MS)','Dirk (DH)'],'Team 2 — Thulani':['Thulani (TM)','Andile (AM)','Erick (E)','Nangamso (NN)','Doctor (DM)'],'Team 3 — Sipho':['Sipho (SM)','Lizwi (LT)','Given (GM)','Sibusiso (SB)'],'Team 4 — Frans':['Frans (FM)','Simon M (SM)','Andy (AS)','Simon H (SH)','Richard (R)'],'Team 5 — Jacques':['Jacques (JJ)','Victor (VH)','Ishmael (IM)','Sihle (SM)','Nhlanhla (NS)'],'Team 6 — Justinos':['Justinos (JL)','Goodwill (GN)','Potego (PS)','Daniel (DN)','Siyabonga (SM)'],'Team 7 — Piet':['Piet (PL)','Themba (TN)','Emanuel (EN)','Alfred M (AM2)','Thembeka (TD)','Vincent (VL)'],'O&M Francois':['Francois (FB)','Johannes (JS)'],'O&M Steven':['Steven (SD)','Simphiwe (SS)'],'Students':['Admision (AN)','Phathutshebzo (PR)','Vanessa (VM)','Koketso (KM)','Bongani (BN)'],'Management / Warehouse':['William Jnr (WJ)','Jaco Joubert (JJ)','Cornelis Bezuidenhout (CB)','David Wilson (DW)']};
+const MEMBERS={'Team 1 \u2014 KG':['Katlego (KB)','Alfred (AM)','Roberto (RS)','Michael (MS)','Dirk (DH)'],'Team 2 \u2014 Thulani':['Thulani (TM)','Andile (AM)','Erick (E)','Nangamso (NN)','Doctor (DM)'],'Team 3 \u2014 Sipho':['Sipho (SM)','Lizwi (LT)','Given (GM)','Sibusiso (SB)'],'Team 4 \u2014 Frans':['Frans (FM)','Simon M (SM)','Andy (AS)','Simon H (SH)','Richard (R)'],'Team 5 \u2014 Jacques':['Jacques (JJ)','Victor (VH)','Ishmael (IM)','Sihle (SM)','Nhlanhla (NS)'],'Team 6 \u2014 Justinos':['Justinos (JL)','Goodwill (GN)','Potego (PS)','Daniel (DN)','Siyabonga (SM)'],'Team 7 \u2014 Piet':['Piet (PL)','Themba (TN)','Emanuel (EN)','Alfred M (AM2)','Thembeka (TD)','Vincent (VL)'],'O&M Francois':['Francois (FB)','Johannes (JS)'],'O&M Steven':['Steven (SD)','Simphiwe (SS)'],'Students':['Admision (AN)','Phathutshebzo (PR)','Vanessa (VM)','Koketso (KM)','Bongani (BN)'],'Management / Warehouse':['William Jnr (WJ)','Jaco Joubert (JJ)','Cornelis Bezuidenhout (CB)','David Wilson (DW)']};
 let signouts=[];
 function nav(btn,page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('page-'+page).classList.add('active');if(btn)btn.classList.add('active');if(page==='stock')renderStock();if(page==='teamppe')renderTeamPPE();if(page==='log')renderLog();if(page==='reorder')renderReorder();if(page==='dashboard')renderDashboard();if(page==='signout')setTimeout(initSigPad,80);if(page==='receive'){renderReceiveGrid();clearReceive();}if(page==='manage'){
     renderRoster();
@@ -974,7 +974,7 @@ function updateMembers(){
   s.innerHTML='<option value="">Select member...</option>';
   (MEMBERS[t]||[]).forEach(m=>s.innerHTML+=`<option>${m}</option>`);
 }
-// Called when name changes — check each filled row for warnings
+// Called when name changes \u2014 check each filled row for warnings
 function onNameChange(){
   updateMembers();
 }
@@ -1169,9 +1169,9 @@ function previewReceive(){
 
 function confirmReceive(){
   const date = document.getElementById('recv-date').value || new Date().toISOString().split('T')[0];
-  const supplier = document.getElementById('recv-supplier').value || '—';
-  const by = document.getElementById('recv-by').value || '—';
-  const notes = document.getElementById('recv-notes').value || '—';
+  const supplier = document.getElementById('recv-supplier').value || '\u2014';
+  const by = document.getElementById('recv-by').value || '\u2014';
+  const notes = document.getElementById('recv-notes').value || '\u2014';
   const items = getReceiveQtys();
 
   if(items.length === 0){ alert('No items to receive.'); return; }
@@ -1298,7 +1298,7 @@ function submitSignout(){
   const date=document.getElementById('so-date').value||new Date().toISOString().split('T')[0];
   const site=document.getElementById('so-site').value||'Warehouse';
   if(!team){alert('Please select a team or site.');return;}
-  if(!name){alert(isSiteMode()?'Please select or add a site name.':'Please select a team member.');return;}const items=[];PPE_ITEMS.forEach(item=>{const k=item.replace(/\s/g,'_');const sz=document.getElementById('sz-'+k)?.value;const qt=parseInt(document.getElementById('qt-'+k)?.value||0);if(qt>0)items.push({item,size:sz||'—',qty:qt});});if(items.length===0){alert('Please enter at least one PPE item with a quantity.');return;}if(sigIsEmpty()){
+  if(!name){alert(isSiteMode()?'Please select or add a site name.':'Please select a team member.');return;}const items=[];PPE_ITEMS.forEach(item=>{const k=item.replace(/\s/g,'_');const sz=document.getElementById('sz-'+k)?.value;const qt=parseInt(document.getElementById('qt-'+k)?.value||0);if(qt>0)items.push({item,size:sz||'\u2014',qty:qt});});if(items.length===0){alert('Please enter at least one PPE item with a quantity.');return;}if(sigIsEmpty()){
     document.getElementById('sig-required').classList.add('show');
     document.getElementById('sig-canvas').scrollIntoView({behavior:'smooth',block:'center'});
     return;
@@ -1326,7 +1326,7 @@ function _doSubmitSignout(name,team,date,site,items,sigImg){
     saveSignout(rec);
     // Update team member PPE count
     updateTeamMemberCount(team, name, i.item, i.qty);
-    // Deduct from warehouse stock — match by item name (case-insensitive, partial)
+    // Deduct from warehouse stock \u2014 match by item name (case-insensitive, partial)
     const key = i.item.toLowerCase();
     let matched = STOCK.filter(s=>s.n.toLowerCase().includes(key));
     if(matched.length===0){
@@ -1350,14 +1350,14 @@ function _doSubmitSignout(name,team,date,site,items,sigImg){
   renderDashboard();
   // Refresh team PPE page if it's currently visible
   if(document.getElementById('page-teamppe').classList.contains('active')) renderTeamPPE();
-  alert(`✓ Sign-out recorded for ${name} — ${items.length} item(s) logged.\n\nWarehouse stock and team PPE counts have been updated.`);
+  alert(`✓ Sign-out recorded for ${name} \u2014 ${items.length} item(s) logged.\n\nWarehouse stock and team PPE counts have been updated.`);
   clearForm();
 }
 function clearForm(){document.getElementById('so-team').value='';document.getElementById('so-name').innerHTML='<option>Select team first...</option>';document.getElementById('so-date').value=new Date().toISOString().split('T')[0];document.getElementById('so-site').value='';clearSig();renderPPEForm();_submitting=false;}
 function getLow(){return STOCK.filter(s=>s.qty<(thresholds[s.n]||12));}
 function statusBadge(qty,t){if(qty<=t*0.4)return'<span class="badge b-danger">Critical</span>';if(qty<=t)return'<span class="badge b-reorder">Reorder</span>';return'<span class="badge b-ok">OK</span>';}
 function renderStock(){const search=(document.getElementById('stock-search')?.value||'').toLowerCase();const cat=document.getElementById('stock-cat')?.value||'';const low=document.getElementById('low-only')?.checked;const filtered=STOCK.filter(s=>(!search||s.n.toLowerCase().includes(search))&&(!cat||s.cat===cat)&&(!low||s.qty<=(thresholds[s.n]||12)));document.getElementById('stock-tbody').innerHTML=filtered.map(s=>{const t=thresholds[s.n]||12;const isLow=s.qty<=t;const pct=Math.min(100,Math.round(s.qty/30*100));const safeKey=s.n.replace(/[^a-zA-Z0-9]/g,'_');
-return`<tr${isLow?' class="reorder-row"':''}><td style="font-weight:500">${s.n}${isLow?` <span class="badge b-reorder" style="font-size:8.5px">Reorder</span>`:''}<div class="stock-bar"><div class="stock-bar-fill ${s.qty<=t*0.4?'bar-low':s.qty<=t?'bar-warn':'bar-ok'}" style="width:${pct}%"></div></div></td><td style="color:var(--grey)">${s.cat}</td><td style="font-weight:700;font-size:14px">${s.qty}</td><td>${statusBadge(s.qty,t)}</td><td><input type="number" value="${t}" min="1" max="999" style="width:65px;height:26px;font-size:12px;text-align:center;border:1px solid var(--border);border-radius:4px" onchange="setThreshold('${s.n}',this.value);renderStock()" title="Edit minimum threshold — press Enter or click away to apply"></td><td style="color:var(--grey);font-size:11px">${s.last}</td><td><button class="btn btn-sm btn-primary" onclick="nav(null,'signout')">Out</button></td><td><button class="btn btn-sm" onclick="quickReceive('${s.n}')" title="Quick receive" style="color:var(--green)">+</button></td></tr>`;}).join('');}
+return`<tr${isLow?' class="reorder-row"':''}><td style="font-weight:500">${s.n}${isLow?` <span class="badge b-reorder" style="font-size:8.5px">Reorder</span>`:''}<div class="stock-bar"><div class="stock-bar-fill ${s.qty<=t*0.4?'bar-low':s.qty<=t?'bar-warn':'bar-ok'}" style="width:${pct}%"></div></div></td><td style="color:var(--grey)">${s.cat}</td><td style="font-weight:700;font-size:14px">${s.qty}</td><td>${statusBadge(s.qty,t)}</td><td><input type="number" value="${t}" min="1" max="999" style="width:65px;height:26px;font-size:12px;text-align:center;border:1px solid var(--border);border-radius:4px" onchange="setThreshold('${s.n}',this.value);renderStock()" title="Edit minimum threshold \u2014 press Enter or click away to apply"></td><td style="color:var(--grey);font-size:11px">${s.last}</td><td><button class="btn btn-sm btn-primary" onclick="nav(null,'signout')">Out</button></td><td><button class="btn btn-sm" onclick="quickReceive('${s.n}')" title="Quick receive" style="color:var(--green)">+</button></td></tr>`;}).join('');}
 const TEAM_PPE_DATA = {"Team 1 \u2014 KG": [{"name": "Katlego Bokguathile", "items": {"VISIBILITY VEST": [3, 6, 5, 3], "TROUSER": [2, 3, 0, 2], "WORK JACKET": [1, 1, 2, 2], "T-SHIRT BLUE": [1, 3, 0, 3], "T-SHIRT WHITE": [2, 0, 0, 0], "SAFETY BOOTS": [0, 1, 2, 1], "HAND GLOVES": [4, 4, 6, 2], "SAFETY GLASSES CL": [2, 0, 0, 0], "SAFETY GLASSES GR": [2, 1, 2, 0], "HARD  HAT BLUE": [2, 0, 0, 0], "CAPS BLUE": [0, 0, 1, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [1, 1, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 1, 1, 0], "SLEEVE ARM PROTECTION": [0, 1, 1, 1], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 1, 0]}}, {"name": "David Mahlangu", "items": {"VISIBILITY VEST": [0, 3, 2, 3], "TROUSER": [0, 3, 1, 0], "WORK JACKET": [1, 1, 1, 0], "T-SHIRT BLUE": [0, 2, 0, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 0, 2, 0], "HAND GLOVES": [0, 4, 3, 2], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [1, 1, 0, 1], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 1, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 1, 0, 0], "SLEEVE ARM PROTECTION": [0, 1, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Roberto  Da Silva", "items": {"VISIBILITY VEST": [2, 6, 4, 0], "TROUSER": [1, 1, 1, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [1, 1, 2, 0], "T-SHIRT WHITE": [0, 2, 0, 0], "SAFETY BOOTS": [0, 1, 0, 1], "HAND GLOVES": [2, 7, 4, 0], "SAFETY GLASSES CL": [0, 1, 0, 0], "SAFETY GLASSES GR": [1, 2, 1, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 1, 0], "SLEEVE ARM PROTECTION": [0, 2, 1, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Michael Skhosana", "items": {"VISIBILITY VEST": [2, 6, 6, 4], "TROUSER": [2, 5, 5, 5], "WORK JACKET": [2, 1, 0, 0], "T-SHIRT BLUE": [2, 3, 2, 4], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 1, 0, 1], "HAND GLOVES": [3, 3, 7, 1], "SAFETY GLASSES CL": [1, 1, 0, 0], "SAFETY GLASSES GR": [1, 1, 2, 1], "HARD  HAT BLUE": [1, 0, 0, 1], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 1, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 1, 0, 0], "SLEEVE ARM PROTECTION": [0, 1, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Dirk Hamelink", "items": {"VISIBILITY VEST": [0, 6, 4, 10], "TROUSER": [0, 3, 1, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [0, 6, 7, 2], "T-SHIRT WHITE": [0, 0, 2, 0], "SAFETY BOOTS": [0, 1, 1, 1], "HAND GLOVES": [0, 7, 3, 7], "SAFETY GLASSES CL": [0, 1, 0, 0], "SAFETY GLASSES GR": [0, 1, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 1, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 1, 0], "SLEEVE ARM PROTECTION": [0, 1, 1, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Cebo Mdleleni", "items": {"VISIBILITY VEST": [2, 7, 10, 24], "TROUSER": [2, 2, 3, 1], "WORK JACKET": [3, 2, 1, 0], "T-SHIRT BLUE": [1, 0, 5, 0], "T-SHIRT WHITE": [1, 0, 0, 0], "SAFETY BOOTS": [1, 1, 1, 0], "HAND GLOVES": [6, 6, 2, 1], "SAFETY GLASSES CL": [1, 1, 0, 1], "SAFETY GLASSES GR": [1, 0, 0, 1], "HARD  HAT BLUE": [2, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [1, 1, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 1, 0], "SLEEVE ARM PROTECTION": [1, 1, 1, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}], "Team 2 \u2014 Thulani": [{"name": "Thulani Mahlangu", "items": {"VISIBILITY VEST": [1, 6, 4, 2], "TROUSER": [2, 1, 2, 0], "WORK JACKET": [1, 1, 2, 0], "T-SHIRT BLUE": [0, 2, 0, 0], "T-SHIRT WHITE": [0, 1, 0, 0], "SAFETY BOOTS": [1, 1, 1, 0], "HAND GLOVES": [6, 7, 7, 1], "SAFETY GLASSES CL": [1, 0, 2, 0], "SAFETY GLASSES GR": [1, 2, 3, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 1, 2, 0], "KNEE PAD PAIR": [1, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 1, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0], "Blue Bucket hat": [0, 0, 1, 0]}}, {"name": "Andile Mthimunye", "items": {"VISIBILITY VEST": [5, 6, 4, 2], "TROUSER": [1, 3, 1, 3], "WORK JACKET": [3, 1, 1, 1], "T-SHIRT BLUE": [1, 1, 3, 1], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [1, 1, 1, 1], "HAND GLOVES": [3, 4, 4, 2], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [0, 1, 1, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 1, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 1, 2, 0], "KNEE PAD PAIR": [2, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 1, 0], "SLEEVE ARM PROTECTION": [1, 1, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Eric  Motau", "items": {"VISIBILITY VEST": [2, 5, 1, 1], "TROUSER": [1, 2, 1, 1], "WORK JACKET": [0, 2, 2, 0], "T-SHIRT BLUE": [0, 2, 2, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [1, 1, 0, 0], "HAND GLOVES": [5, 8, 8, 3], "SAFETY GLASSES CL": [0, 1, 1, 0], "SAFETY GLASSES GR": [1, 1, 3, 1], "HARD  HAT BLUE": [1, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 1, 2, 0], "KNEE PAD PAIR": [1, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [1, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 1, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Nangamso Nxulu", "items": {"VISIBILITY VEST": [2, 3, 2, 1], "TROUSER": [2, 2, 3, 1], "WORK JACKET": [1, 0, 0, 1], "T-SHIRT BLUE": [1, 0, 2, 1], "T-SHIRT WHITE": [1, 0, 0, 0], "SAFETY BOOTS": [1, 1, 1, 0], "HAND GLOVES": [4, 5, 3, 1], "SAFETY GLASSES CL": [2, 0, 0, 0], "SAFETY GLASSES GR": [2, 1, 1, 0], "HARD  HAT BLUE": [1, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 1, 0, 0], "KNEE PAD PAIR": [1, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [1, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Doctor", "items": {"VISIBILITY VEST": [2, 5, 4, 3], "TROUSER": [2, 2, 1, 1], "WORK JACKET": [0, 2, 1, 0], "T-SHIRT BLUE": [1, 1, 5, 1], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [1, 1, 1, 0], "HAND GLOVES": [3, 7, 3, 1], "SAFETY GLASSES CL": [0, 0, 1, 0], "SAFETY GLASSES GR": [2, 3, 2, 1], "HARD  HAT BLUE": [0, 1, 0, 0], "CAPS BLUE": [0, 0, 1, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 5, 2], "KNEE PAD PAIR": [0, 1, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 1, 0], "SLEEVE ARM PROTECTION": [1, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0], "Blue Bucket hat": [0, 0, 0, 0]}}], "Team 3 \u2014 Sipho": [{"name": "Sipho Mahlangu", "items": {"VISIBILITY VEST": [1, 1, 3, 3], "TROUSER": [1, 3, 2, 0], "WORK JACKET": [0, 2, 0, 0], "T-SHIRT BLUE": [0, 6, 0, 0], "T-SHIRT WHITE": [0, 1, 1, 0], "SAFETY BOOTS": [1, 1, 1, 1], "HAND GLOVES": [2, 2, 2, 1], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [1, 1, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 1], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}, {"name": "Lizwi Thwala", "items": {"VISIBILITY VEST": [0, 4, 4, 2], "TROUSER": [0, 4, 2, 0], "WORK JACKET": [0, 4, 1, 0], "T-SHIRT BLUE": [0, 0, 0, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [1, 1, 1, 1], "HAND GLOVES": [2, 3, 3, 0], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [1, 2, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [1, 0, 0, 1], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}, {"name": "Given Mahlangu", "items": {"VISIBILITY VEST": [0, 5, 6, 1], "TROUSER": [2, 5, 4, 0], "WORK JACKET": [1, 1, 4, 0], "T-SHIRT BLUE": [2, 3, 2, 0], "T-SHIRT WHITE": [0, 1, 0, 0], "SAFETY BOOTS": [2, 3, 1, 0], "HAND GLOVES": [1, 2, 2, 1], "SAFETY GLASSES CL": [1, 0, 0, 0], "SAFETY GLASSES GR": [1, 1, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 1, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 1], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}, {"name": "Sibusiso Mahlangu", "items": {"VISIBILITY VEST": [0, 5, 8, 3], "TROUSER": [1, 5, 5, 1], "WORK JACKET": [0, 3, 1, 0], "T-SHIRT BLUE": [0, 0, 2, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [1, 1, 2, 1], "HAND GLOVES": [2, 4, 11, 2], "SAFETY GLASSES CL": [2, 0, 0, 0], "SAFETY GLASSES GR": [1, 2, 1, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 1], "EAR PLUGS": [0, 0, 0, 5], "KNEE PAD PAIR": [0, 1, 1, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 1, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0]}}], "Team 4 \u2014 Frans": [{"name": "Frans Mafa", "items": {"VISIBILITY VEST": [1, 7, 2, 3], "TROUSER": [1, 4, 5, 2], "WORK JACKET": [1, 2, 1, 0], "T-SHIRT BLUE": [1, 4, 3, 0], "T-SHIRT WHITE": [1, 0, 0, 0], "SAFETY BOOTS": [3, 0, 2, 0], "HAND GLOVES": [8, 6, 4, 1], "SAFETY GLASSES CL": [1, 0, 0, 0], "SAFETY GLASSES GR": [0, 2, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 1], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 4, 0], "KNEE PAD PAIR": [1, 1, 1, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 1], "HARD HAT CHIN STRAP": [0, 0, 0, 1], "Blue Bucket hat": [0, 0, 0, 0], "Kidney Belt": [0, 0, 0, 1]}}, {"name": "Simon Maffa", "items": {"VISIBILITY VEST": [5, 5, 2, 6], "TROUSER": [1, 4, 2, 3], "WORK JACKET": [1, 2, 2, 1], "T-SHIRT BLUE": [2, 2, 4, 3], "T-SHIRT WHITE": [3, 1, 0, 0], "SAFETY BOOTS": [2, 0, 2, 1], "HAND GLOVES": [6, 10, 7, 4], "SAFETY GLASSES CL": [2, 0, 0, 0], "SAFETY GLASSES GR": [1, 1, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 1], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 4, 0], "KNEE PAD PAIR": [1, 1, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [1, 0, 0, 1], "HARD HAT CHIN STRAP": [0, 0, 0, 1], "Blue Bucket hat": [0, 0, 0, 1], "Kidney Belt": [0, 0, 0, 0]}}, {"name": "Andy Shigwene", "items": {"VISIBILITY VEST": [4, 7, 4, 5], "TROUSER": [1, 8, 2, 3], "WORK JACKET": [2, 4, 1, 1], "T-SHIRT BLUE": [2, 4, 4, 0], "T-SHIRT WHITE": [2, 1, 0, 0], "SAFETY BOOTS": [2, 1, 1, 1], "HAND GLOVES": [8, 8, 8, 5], "SAFETY GLASSES CL": [1, 1, 0, 0], "SAFETY GLASSES GR": [2, 4, 0, 1], "HARD  HAT BLUE": [1, 0, 0, 1], "CAPS BLUE": [1, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 4, 0], "KNEE PAD PAIR": [1, 1, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 1], "HARD HAT CHIN STRAP": [0, 0, 0, 1], "Blue Bucket hat": [0, 0, 0, 0], "Kidney Belt": [0, 0, 0, 0]}}, {"name": "Simon Hlulu", "items": {"VISIBILITY VEST": [1, 4, 3, 2], "TROUSER": [0, 3, 0, 1], "WORK JACKET": [3, 2, 1, 1], "T-SHIRT BLUE": [2, 2, 4, 0], "T-SHIRT WHITE": [2, 1, 0, 0], "SAFETY BOOTS": [2, 0, 2, 1], "HAND GLOVES": [7, 8, 6, 4], "SAFETY GLASSES CL": [2, 1, 0, 0], "SAFETY GLASSES GR": [2, 2, 0, 1], "HARD  HAT BLUE": [0, 0, 0, 1], "CAPS BLUE": [0, 0, 0, 1], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 4, 0], "KNEE PAD PAIR": [1, 1, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 1], "Blue Bucket hat": [0, 0, 0, 0], "Kidney Belt": [0, 0, 0, 1]}}, {"name": "Richard", "items": {"VISIBILITY VEST": [0, 3, 2, 3], "TROUSER": [0, 2, 0, 1], "WORK JACKET": [0, 1, 0, 1], "T-SHIRT BLUE": [0, 2, 0, 2], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 1, 0, 1], "HAND GLOVES": [0, 2, 6, 3], "SAFETY GLASSES CL": [0, 1, 0, 0], "SAFETY GLASSES GR": [0, 1, 0, 0], "HARD  HAT BLUE": [0, 1, 0, 1], "CAPS BLUE": [0, 1, 0, 1], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 2, 4, 0], "KNEE PAD PAIR": [0, 1, 0, 0], "HAT WITH FLAP": [0, 1, 0, 1], "HARNESS FULL BODY": [0, 1, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 1], "HARD HAT CHIN STRAP": [0, 0, 0, 1], "Blue Bucket hat": [0, 0, 0, 0], "Kidney Belt": [0, 0, 0, 0]}}], "Team 5 \u2014 Jacques": [{"name": "Jacque Jordaan", "items": {"VISIBILITY VEST": [1, 3, 0, 1], "TROUSER": [0, 2, 3, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [0, 0, 2, 1], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 0, 0, 0], "HAND GLOVES": [1, 1, 0, 0], "SAFETY GLASSES CL": [1, 0, 0, 0], "SAFETY GLASSES GR": [1, 0, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 8, 0], "KNEE PAD PAIR": [1, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}, {"name": "Victor Hugo", "items": {"VISIBILITY VEST": [1, 3, 0, 1], "TROUSER": [0, 2, 3, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [0, 0, 2, 1], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 0, 0, 0], "HAND GLOVES": [1, 1, 0, 0], "SAFETY GLASSES CL": [1, 0, 0, 0], "SAFETY GLASSES GR": [1, 0, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 8, 0], "KNEE PAD PAIR": [1, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}, {"name": "Ishmael Mahlangu", "items": {"VISIBILITY VEST": [1, 4, 5, 3], "TROUSER": [0, 4, 2, 2], "WORK JACKET": [0, 2, 0, 0], "T-SHIRT BLUE": [0, 1, 2, 1], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [1, 0, 2, 0], "HAND GLOVES": [0, 2, 3, 1], "SAFETY GLASSES CL": [0, 1, 1, 1], "SAFETY GLASSES GR": [0, 1, 1, 1], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 1, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 8, 10], "KNEE PAD PAIR": [1, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 1, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 1], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}, {"name": "Sihle Mahlangu", "items": {"VISIBILITY VEST": [0, 6, 5, 3], "TROUSER": [0, 3, 5, 1], "WORK JACKET": [0, 2, 1, 0], "T-SHIRT BLUE": [0, 2, 4, 0], "T-SHIRT WHITE": [0, 1, 0, 0], "SAFETY BOOTS": [0, 1, 1, 1], "HAND GLOVES": [0, 5, 5, 4], "SAFETY GLASSES CL": [0, 1, 0, 1], "SAFETY GLASSES GR": [0, 1, 1, 1], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 1, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 1, 8, 0], "KNEE PAD PAIR": [0, 1, 0, 0], "HAT WITH FLAP": [0, 2, 0, 0], "HARNESS FULL BODY": [0, 1, 0, 0], "SLEEVE ARM PROTECTION": [0, 2, 2, 1], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}, {"name": "Nhlanhla Lucky Sithle", "items": {"VISIBILITY VEST": [0, 1, 4, 2], "TROUSER": [0, 2, 6, 2], "WORK JACKET": [0, 2, 2, 0], "T-SHIRT BLUE": [0, 2, 1, 0], "T-SHIRT WHITE": [0, 1, 0, 0], "SAFETY BOOTS": [0, 1, 1, 0], "HAND GLOVES": [0, 5, 5, 1], "SAFETY GLASSES CL": [0, 1, 0, 0], "SAFETY GLASSES GR": [0, 1, 0, 1], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 1, 8, 0], "KNEE PAD PAIR": [0, 1, 0, 0], "HAT WITH FLAP": [0, 2, 0, 0], "HARNESS FULL BODY": [0, 1, 1, 0], "SLEEVE ARM PROTECTION": [0, 1, 1, 1], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}], "Team 6 \u2014 Justinos": [{"name": "Justinos Lefoka", "items": {"VISIBILITY VEST": [4, 6, 7, 4], "TROUSER": [1, 1, 3, 1], "WORK JACKET": [1, 0, 3, 1], "T-SHIRT BLUE": [0, 4, 1, 2], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [1, 1, 1, 0], "HAND GLOVES": [3, 6, 3, 1], "SAFETY GLASSES CL": [1, 0, 1, 0], "SAFETY GLASSES GR": [0, 1, 3, 0], "HARD  HAT BLUE": [0, 0, 1, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [1, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [2, 0, 0, 0], "SLEEVE ARM PROTECTION": [1, 1, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0], "Blue Bucket hat": [0, 0, 1, 0]}}, {"name": "Goodwill Nkwana", "items": {"VISIBILITY VEST": [0, 2, 6, 2], "TROUSER": [0, 2, 3, 1], "WORK JACKET": [0, 1, 0, 0], "T-SHIRT BLUE": [0, 2, 2, 0], "T-SHIRT WHITE": [0, 1, 0, 0], "SAFETY BOOTS": [0, 1, 2, 0], "HAND GLOVES": [0, 1, 4, 1], "SAFETY GLASSES CL": [0, 1, 1, 0], "SAFETY GLASSES GR": [0, 1, 3, 0], "HARD  HAT BLUE": [0, 1, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 0, 1, 0], "EAR PLUGS": [0, 2, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 1, 0, 0], "SLEEVE ARM PROTECTION": [0, 2, 1, 0], "HARD HAT CHIN STRAP": [0, 0, 2, 0], "Blue Bucket hat": [0, 0, 1, 0]}}, {"name": "Potego Seshothela", "items": {"VISIBILITY VEST": [3, 3, 18, 4], "TROUSER": [2, 3, 1, 0], "WORK JACKET": [1, 4, 0, 0], "T-SHIRT BLUE": [0, 5, 2, 2], "T-SHIRT WHITE": [1, 0, 0, 0], "SAFETY BOOTS": [1, 1, 0, 0], "HAND GLOVES": [3, 5, 0, 0], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [0, 0, 2, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 3, 0, 0], "KNEE PAD PAIR": [1, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 1, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Daniel Nkgudi", "items": {"VISIBILITY VEST": [0, 3, 4, 2], "TROUSER": [0, 2, 3, 1], "WORK JACKET": [0, 1, 2, 1], "T-SHIRT BLUE": [0, 2, 2, 2], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 1, 2, 1], "HAND GLOVES": [0, 1, 4, 1], "SAFETY GLASSES CL": [0, 1, 0, 0], "SAFETY GLASSES GR": [0, 1, 2, 0], "HARD  HAT BLUE": [0, 1, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 0, 1, 0], "EAR PLUGS": [0, 2, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 1, 0, 0], "SLEEVE ARM PROTECTION": [0, 1, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0], "Blue Bucket hat": [0, 0, 1, 0]}}, {"name": "Siyabonga  Maseko", "items": {"VISIBILITY VEST": [1, 6, 6, 2], "TROUSER": [2, 3, 2, 2], "WORK JACKET": [2, 0, 1, 0], "T-SHIRT BLUE": [1, 0, 5, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [1, 1, 1, 0], "HAND GLOVES": [2, 5, 4, 2], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [0, 3, 1, 0], "HARD  HAT BLUE": [1, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 1, 2, 0], "KNEE PAD PAIR": [1, 0, 0, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 1, 0], "Blue Bucket hat": [0, 0, 1, 0]}}], "Team 7 \u2014 Piet": [{"name": "Piet Lebese", "items": {"VISIBILITY VEST": [3, 4, 5, 3], "TROUSER": [4, 3, 5, 0], "WORK JACKET": [1, 3, 1, 0], "T-SHIRT BLUE": [3, 5, 2, 1], "T-SHIRT WHITE": [1, 1, 0, 0], "SAFETY BOOTS": [1, 0, 1, 1], "HAND GLOVES": [5, 2, 4, 2], "SAFETY GLASSES CL": [1, 0, 0, 0], "SAFETY GLASSES GR": [0, 1, 1, 0], "HARD  HAT BLUE": [0, 0, 1, 0], "CAPS BLUE": [0, 0, 1, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [1, 1, 1, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 1], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 1], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 1, 0]}}, {"name": "Themba Ndlovu", "items": {"VISIBILITY VEST": [3, 3, 3, 2], "TROUSER": [2, 1, 2, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [2, 2, 2, 2], "T-SHIRT WHITE": [0, 1, 0, 0], "SAFETY BOOTS": [1, 0, 1, 0], "HAND GLOVES": [8, 7, 7, 3], "SAFETY GLASSES CL": [2, 0, 0, 0], "SAFETY GLASSES GR": [1, 0, 1, 1], "HARD  HAT BLUE": [1, 0, 1, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 2, 0], "KNEE PAD PAIR": [0, 1, 0, 1], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Emanual Nkhabelane", "items": {"VISIBILITY VEST": [3, 1, 4, 2], "TROUSER": [0, 2, 2, 0], "WORK JACKET": [1, 0, 0, 1], "T-SHIRT BLUE": [1, 1, 0, 1], "T-SHIRT WHITE": [1, 1, 0, 0], "SAFETY BOOTS": [1, 0, 0, 0], "HAND GLOVES": [5, 8, 6, 1], "SAFETY GLASSES CL": [2, 0, 0, 0], "SAFETY GLASSES GR": [1, 0, 1, 0], "HARD  HAT BLUE": [1, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 1], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 1, 0, 1], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 1, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Alfred Mohgotho", "items": {"VISIBILITY VEST": [2, 2, 3, 4], "TROUSER": [1, 1, 1, 1], "WORK JACKET": [1, 1, 0, 0], "T-SHIRT BLUE": [3, 2, 2, 3], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 0, 2, 0], "HAND GLOVES": [2, 5, 4, 3], "SAFETY GLASSES CL": [1, 1, 0, 0], "SAFETY GLASSES GR": [1, 1, 2, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 1], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 1, 0], "SLEEVE ARM PROTECTION": [1, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 1, 0]}}, {"name": "Thembeka Dlamini", "items": {"VISIBILITY VEST": [4, 3, 6, 2], "TROUSER": [1, 1, 2, 0], "WORK JACKET": [1, 1, 1, 0], "T-SHIRT BLUE": [1, 1, 3, 0], "T-SHIRT WHITE": [1, 0, 0, 0], "SAFETY BOOTS": [2, 0, 1, 0], "HAND GLOVES": [5, 5, 4, 0], "SAFETY GLASSES CL": [3, 0, 0, 0], "SAFETY GLASSES GR": [1, 0, 2, 0], "HARD  HAT BLUE": [1, 0, 2, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 1, 0, 1], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [1, 0, 0, 1], "SLEEVE ARM PROTECTION": [1, 0, 2, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}], "O&M Francois": [{"name": "Francois Bezuidenhout", "items": {"VISIBILITY VEST": [4, 3, 1, 1], "TROUSER": [2, 1, 0, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [2, 0, 2, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 0, 0, 0], "HAND GLOVES": [0, 2, 0, 1], "SAFETY GLASSES CL": [1, 2, 0, 1], "SAFETY GLASSES GR": [0, 0, 0, 0], "HARD  HAT BLUE": [0, 1, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 0, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 1, 0], "SLEEVE ARM PROTECTION": [0, 1, 0, 1], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}, {"name": "Johannes Skhosana", "items": {"VISIBILITY VEST": [2, 2, 7, 1], "TROUSER": [5, 3, 5, 1], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [4, 0, 2, 1], "T-SHIRT WHITE": [0, 1, 0, 0], "SAFETY BOOTS": [2, 0, 1, 0], "HAND GLOVES": [9, 3, 4, 3], "SAFETY GLASSES CL": [2, 2, 0, 0], "SAFETY GLASSES GR": [0, 1, 0, 0], "HARD  HAT BLUE": [0, 1, 1, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [1, 0, 0, 0], "KNEE PAD PAIR": [1, 0, 1, 1], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 1, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 1]}}], "O&M Steven": [{"name": "Steven Da Silva", "items": {"VISIBILITY VEST": [1, 1, 1, 0], "TROUSER": [0, 4, 1, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [0, 1, 4, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [1, 0, 1, 0], "HAND GLOVES": [0, 2, 0, 1], "SAFETY GLASSES CL": [0, 1, 0, 0], "SAFETY GLASSES GR": [0, 2, 0, 0], "HARD  HAT BLUE": [0, 1, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [1, 0, 1, 0], "HAT WITH FLAP": [1, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}, {"name": "Simphiwe Skosana", "items": {"VISIBILITY VEST": [0, 3, 2, 0], "TROUSER": [1, 0, 1, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [1, 0, 1, 0], "T-SHIRT WHITE": [0, 0, 1, 0], "SAFETY BOOTS": [0, 1, 1, 0], "HAND GLOVES": [1, 4, 0, 1], "SAFETY GLASSES CL": [0, 1, 0, 0], "SAFETY GLASSES GR": [0, 1, 0, 1], "HARD  HAT BLUE": [0, 1, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 1, 0], "WARM JACKET NAVY": [0, 1, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 1, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0]}}],"Management / Warehouse":[{"name": "William Jnr", "items": {"VISIBILITY VEST": [0, 0, 0, 0], "TROUSER": [0, 0, 0, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [0, 0, 0, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 0, 0, 0], "HAND GLOVES": [0, 0, 0, 0], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [0, 0, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 0, 0], "WARM JACKET NAVY": [0, 0, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Jaco Joubert", "items": {"VISIBILITY VEST": [0, 0, 0, 0], "TROUSER": [0, 0, 0, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [0, 0, 0, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 0, 0, 0], "HAND GLOVES": [0, 0, 0, 0], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [0, 0, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 0, 0], "WARM JACKET NAVY": [0, 0, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "Cornelis Bezuidenhout", "items": {"VISIBILITY VEST": [0, 0, 0, 0], "TROUSER": [0, 0, 0, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [0, 0, 0, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 0, 0, 0], "HAND GLOVES": [0, 0, 0, 0], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [0, 0, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 0, 0], "WARM JACKET NAVY": [0, 0, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}, {"name": "David Wilson", "items": {"VISIBILITY VEST": [0, 0, 0, 0], "TROUSER": [0, 0, 0, 0], "WORK JACKET": [0, 0, 0, 0], "T-SHIRT BLUE": [0, 0, 0, 0], "T-SHIRT WHITE": [0, 0, 0, 0], "SAFETY BOOTS": [0, 0, 0, 0], "HAND GLOVES": [0, 0, 0, 0], "SAFETY GLASSES CL": [0, 0, 0, 0], "SAFETY GLASSES GR": [0, 0, 0, 0], "HARD  HAT BLUE": [0, 0, 0, 0], "CAPS BLUE": [0, 0, 0, 0], "CAPS WHITE": [0, 0, 0, 0], "BEANIES": [0, 0, 0, 0], "WARM JACKET NAVY": [0, 0, 0, 0], "EAR PLUGS": [0, 0, 0, 0], "KNEE PAD PAIR": [0, 0, 0, 0], "HAT WITH FLAP": [0, 0, 0, 0], "HARNESS FULL BODY": [0, 0, 0, 0], "SLEEVE ARM PROTECTION": [0, 0, 0, 0], "HARD HAT CHIN STRAP": [0, 0, 0, 0], "Blue Bucket hat": [0, 0, 0, 0]}}]};
 function renderTeamPPE(){
   const teamSel = document.getElementById('team-sel').value;
@@ -1408,7 +1408,7 @@ function renderTeamPPE(){
         const vals = m.items[item] || [0,0,0,0];
         vals.forEach((v, yi) => {
           const isNew = yi===3 && isNewValue(teamName, m.name, item, yi);
-          html += `<td class="${cellClass(v, isNew)}" title="${isNew?'Updated this session':''}">${v || '—'}</td>`;
+          html += `<td class="${cellClass(v, isNew)}" title="${isNew?'Updated this session':''}">${v || '\u2014'}</td>`;
         });
       });
       html += `</tr>`;
@@ -1428,14 +1428,14 @@ function renderTeamPPE(){
   container.innerHTML = html || '<div style="color:var(--grey);padding:20px;text-align:center">No data available.</div>';
 }
 
-function renderLog(){const s=(document.getElementById('log-search')?.value||'').toLowerCase();const t=document.getElementById('log-team')?.value||'';const d=document.getElementById('log-date')?.value||'';const f=signouts.filter(r=>(!s||r.name.toLowerCase().includes(s)||r.item.toLowerCase().includes(s))&&(!t||r.team===t)&&(!d||r.date===d));const tbody=document.getElementById('log-tbody');if(!f.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr>';return;}tbody.innerHTML=f.slice().reverse().map(r=>`<tr><td>${r.date}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="background:${r.team==='Site'?'#e8f0fb':'var(--yellow)'};color:${r.team==='Site'?'#185fa5':'var(--dark)'}">${r.team==='Site'?'📍':r.name.substring(0,2).toUpperCase()}</div>${r.name}${r.team==='Site'?'<span class="site-log-badge">SITE</span>':''}</div></td><td style="color:var(--grey)">${r.team==='Site'?r.site||'—':r.team}</td><td>${r.item}</td><td>${r.size}</td><td style="font-weight:700">${r.qty}</td><td>${r.sig?`<img src="${r.sig}" style="height:32px;max-width:80px;border:1px solid var(--border);border-radius:3px;background:#fff;display:block" title="Signature">`:'<span style="color:var(--red);font-size:10px">No sig</span>'}</td></tr>`).join('');}
+function renderLog(){const s=(document.getElementById('log-search')?.value||'').toLowerCase();const t=document.getElementById('log-team')?.value||'';const d=document.getElementById('log-date')?.value||'';const f=signouts.filter(r=>(!s||r.name.toLowerCase().includes(s)||r.item.toLowerCase().includes(s))&&(!t||r.team===t)&&(!d||r.date===d));const tbody=document.getElementById('log-tbody');if(!f.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--grey);padding:22px">No sign-outs recorded yet.</td></tr>';return;}tbody.innerHTML=f.slice().reverse().map(r=>`<tr><td>${r.date}</td><td><div style="display:flex;align-items:center;gap:6px"><div class="avatar" style="background:${r.team==='Site'?'#e8f0fb':'var(--yellow)'};color:${r.team==='Site'?'#185fa5':'var(--dark)'}">${r.team==='Site'?'📍':r.name.substring(0,2).toUpperCase()}</div>${r.name}${r.team==='Site'?'<span class="site-log-badge">SITE</span>':''}</div></td><td style="color:var(--grey)">${r.team==='Site'?r.site||'\u2014':r.team}</td><td>${r.item}</td><td>${r.size}</td><td style="font-weight:700">${r.qty}</td><td>${r.sig?`<img src="${r.sig}" style="height:32px;max-width:80px;border:1px solid var(--border);border-radius:3px;background:#fff;display:block" title="Signature">`:'<span style="color:var(--red);font-size:10px">No sig</span>'}</td></tr>`).join('');}
 
 function setThreshold(itemName, val){
   const v = Math.max(1, parseInt(val)||1);
   thresholds[itemName] = v;
   saveThreshold(itemName, v);
   // Re-render all connected views immediately
-  renderReorder(true);       // reorder table only — skip grid to preserve input focus
+  renderReorder(true);       // reorder table only \u2014 skip grid to preserve input focus
   updateReorderBadge();     // sidebar badge + dashboard metric
   renderDashboard();        // dashboard alerts + overview cards
   // If stock page is open, refresh it too (threshold affects status badges)
@@ -1476,8 +1476,8 @@ function renderReorder(skipGrid){
   }
 }
 function updateReorderBadge(){const c=getLow().length;const b=document.getElementById('reorder-badge');b.textContent=c>0?c:'';b.style.display=c>0?'inline-flex':'none';document.getElementById('dash-reorder-val').textContent=c;}
-function renderDashboard(){const low=getLow();document.getElementById('dash-alert-banner').innerHTML=low.length>0?`<div class="notice notice-warn">&#9888; ${low.length} PPE item${low.length>1?'s':''} need reordering. <button class="btn btn-sm" onclick="nav(null,'reorder')" style="margin-left:8px">View</button></div>`:'';document.getElementById('dash-reorder-badge').textContent=low.length>0?low.length+' items':'All OK';document.getElementById('dash-reorder-badge').className='badge '+(low.length>0?'b-danger':'b-ok');document.getElementById('dash-reorder-list').innerHTML=low.length===0?'<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">&#10003; All stock levels OK</div>':low.slice(0,5).map(s=>`<div class="log-row"><div class="log-dot" style="background:${s.qty<=(thresholds[s.n]||12)*0.4?'var(--red)':'var(--orange)'}"></div><div><div class="log-text"><strong>${s.n}</strong> — ${s.qty} remaining</div><div class="log-time">Min: ${thresholds[s.n]||12} · Suggest ordering ${(thresholds[s.n]||12)*2-s.qty} units</div></div></div>`).join('');updateDashLog();const cats=[...new Set(STOCK.map(s=>s.cat))];document.getElementById('stock-overview').innerHTML=cats.map(cat=>{const items=STOCK.filter(s=>s.cat===cat);const total=items.reduce((a,b)=>a+b.qty,0);const nlow=items.filter(s=>s.qty<=(thresholds[s.n]||12)).length;const cls=nlow>0?(nlow>=items.length*0.5?'ov-low':'ov-warn'):'ov-ok';return`<div class="ov-card ${cls}"><div class="ov-label">${cat}</div><div class="ov-val">${total}</div><div class="ov-sub">${items.length} variants${nlow>0?` · <span style="color:var(--red)">${nlow} low</span>`:' · All OK'}</div></div>`;}).join('');}
-function updateDashLog(){const el=document.getElementById('dash-log');if(!signouts.length){el.innerHTML='<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">No sign-outs yet.</div>';return;}el.innerHTML=signouts.slice(-4).reverse().map(s=>`<div class="log-row"><div class="log-dot" style="background:var(--red)"></div><div><div class="log-text">${s.item} — ${s.name}</div><div class="log-time">${s.date} · ${s.team} · ${s.site}</div></div></div>`).join('');}
+function renderDashboard(){const low=getLow();document.getElementById('dash-alert-banner').innerHTML=low.length>0?`<div class="notice notice-warn">&#9888; ${low.length} PPE item${low.length>1?'s':''} need reordering. <button class="btn btn-sm" onclick="nav(null,'reorder')" style="margin-left:8px">View</button></div>`:'';document.getElementById('dash-reorder-badge').textContent=low.length>0?low.length+' items':'All OK';document.getElementById('dash-reorder-badge').className='badge '+(low.length>0?'b-danger':'b-ok');document.getElementById('dash-reorder-list').innerHTML=low.length===0?'<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">&#10003; All stock levels OK</div>':low.slice(0,5).map(s=>`<div class="log-row"><div class="log-dot" style="background:${s.qty<=(thresholds[s.n]||12)*0.4?'var(--red)':'var(--orange)'}"></div><div><div class="log-text"><strong>${s.n}</strong> \u2014 ${s.qty} remaining</div><div class="log-time">Min: ${thresholds[s.n]||12} · Suggest ordering ${(thresholds[s.n]||12)*2-s.qty} units</div></div></div>`).join('');updateDashLog();const cats=[...new Set(STOCK.map(s=>s.cat))];document.getElementById('stock-overview').innerHTML=cats.map(cat=>{const items=STOCK.filter(s=>s.cat===cat);const total=items.reduce((a,b)=>a+b.qty,0);const nlow=items.filter(s=>s.qty<=(thresholds[s.n]||12)).length;const cls=nlow>0?(nlow>=items.length*0.5?'ov-low':'ov-warn'):'ov-ok';return`<div class="ov-card ${cls}"><div class="ov-label">${cat}</div><div class="ov-val">${total}</div><div class="ov-sub">${items.length} variants${nlow>0?` · <span style="color:var(--red)">${nlow} low</span>`:' · All OK'}</div></div>`;}).join('');}
+function updateDashLog(){const el=document.getElementById('dash-log');if(!signouts.length){el.innerHTML='<div style="color:var(--grey);font-size:12px;padding:14px 0;text-align:center">No sign-outs yet.</div>';return;}el.innerHTML=signouts.slice(-4).reverse().map(s=>`<div class="log-row"><div class="log-dot" style="background:var(--red)"></div><div><div class="log-text">${s.item} \u2014 ${s.name}</div><div class="log-time">${s.date} · ${s.team} · ${s.site}</div></div></div>`).join('');}
 
 
 
@@ -1702,7 +1702,7 @@ function renderPPEManageList(){
     return `<div class="ppe-list-item">
       <div>
         <div style="font-size:12px;font-weight:500">${item}</div>
-        <div style="font-size:10px;color:var(--grey)">${stock?stock.cat:'—'} · ${stock?stock.qty:0} in stock</div>
+        <div style="font-size:10px;color:var(--grey)">${stock?stock.cat:'\u2014'} · ${stock?stock.qty:0} in stock</div>
       </div>
       <button class="ppe-remove-btn" onclick="quickRemovePPE('${item.replace(/'/g,"\\'")}')">×</button>
     </div>`;
@@ -1768,7 +1768,7 @@ function renderSiteDropdown(){
 }
 
 function onSiteNameChange(val){
-  // Nothing extra needed — value is used on submit
+  // Nothing extra needed \u2014 value is used on submit
 }
 
 function promptNewSite(){
@@ -1813,7 +1813,7 @@ function getSiteRecipientName(){
 // ──────────────────────────────────────────────────────────────────────────
 
 // ── Duplicate sign-out warning system ─────────────────────────────────────
-let WARN_DAYS = 30; // warn if same item signed out within this many days — adjustable
+let WARN_DAYS = 30; // warn if same item signed out within this many days \u2014 adjustable
 
 function daysBetween(dateStr1, dateStr2){
   function parseDate(s){
@@ -1892,9 +1892,9 @@ function checkDuplicateSignouts(memberName, teamName, items){
         size: i.size,
         qty: i.qty,
         prevDate: latest.date,
-        prevSite: latest.site || '—',
+        prevSite: latest.site || '\u2014',
         prevQty: latest.qty,
-        prevSize: latest.size || '—',
+        prevSize: latest.size || '\u2014',
         days: days
       });
     }
@@ -1910,12 +1910,12 @@ function showWarnModal(warnings, memberName, onProceed, onCancel){
   let warningRows = warnings.map(w => `
     <div class="warn-modal-item">
       <div class="warn-item-row">
-        <span class="warn-item-name">${w.item}${w.size && w.size !== '—' ? ' — ' + w.size : ''}</span>
+        <span class="warn-item-name">${w.item}${w.size && w.size !== '\u2014' ? ' \u2014 ' + w.size : ''}</span>
         <span class="warn-item-date">${w.days === 0 ? 'Today' : w.days + ' day' + (w.days>1?'s':'')+' ago'}</span>
       </div>
       <div class="warn-item-detail">
         Previously signed out: <strong>${w.prevQty} unit${w.prevQty>1?'s':''}</strong>
-        ${w.prevSize && w.prevSize !== '—' ? '· Size ' + w.prevSize : ''}
+        ${w.prevSize && w.prevSize !== '\u2014' ? '· Size ' + w.prevSize : ''}
         · ${w.prevDate} · ${w.prevSite}
       </div>
     </div>
@@ -1938,7 +1938,7 @@ function showWarnModal(warnings, memberName, onProceed, onCancel){
         ${warningRows}
       </div>
       <div class="warn-modal-footer">
-        <button class="btn" id="warn-cancel-btn">Cancel — go back</button>
+        <button class="btn" id="warn-cancel-btn">Cancel \u2014 go back</button>
         <button class="btn btn-primary" id="warn-proceed-btn">Confirm &amp; proceed anyway</button>
       </div>
     </div>`;
@@ -2012,7 +2012,7 @@ function exportStockExcel(){
             letter-spacing:0.5px">${statusText}</span>
         </td>
         <td style="background:${bg};padding:6px 10px;color:#9ea0a3;
-          font-family:Calibri,sans-serif;font-size:9pt">${s.last||'—'}</td>
+          font-family:Calibri,sans-serif;font-size:9pt">${s.last||'\u2014'}</td>
       </tr>`;
     });
 
@@ -2020,7 +2020,7 @@ function exportStockExcel(){
     rowsHtml += `<tr>
       <td colspan="2" style="background:#f0f0ee;border-top:1px solid #e0ddd6;padding:5px 10px;
         font-family:Calibri,sans-serif;font-size:9pt;color:#9ea0a3;font-style:italic">
-        Subtotal — ${cat}
+        Subtotal \u2014 ${cat}
       </td>
       <td style="background:#f0f0ee;border-top:1px solid #e0ddd6;padding:5px 10px;
         text-align:center;font-weight:700;font-family:Calibri,sans-serif;font-size:10pt;
@@ -2154,7 +2154,7 @@ function _generatePDF(reportHtml, elId, filename){
     console.error('PDF error:',err);
     document.body.removeChild(container);
     document.body.removeChild(loadEl);
-    alert('PDF generation failed — please try again.');
+    alert('PDF generation failed \u2014 please try again.');
   });
 }
 
@@ -2173,7 +2173,7 @@ function exportLog(){
   filtered.forEach(r=>{(byDate[r.date]=byDate[r.date]||[]).push(r);});
   const sortedDates=Object.keys(byDate).sort().reverse();
   let grandTotal=0; filtered.forEach(r=>grandTotal+=r.qty);
-  const period=sortedDates.length>0?sortedDates[sortedDates.length-1]+' to '+sortedDates[0]:'—';
+  const period=sortedDates.length>0?sortedDates[sortedDates.length-1]+' to '+sortedDates[0]:'\u2014';
   let rowsHtml=''; let rowNum=1;
   sortedDates.forEach(d=>{
     const dayRows=byDate[d];
@@ -2189,13 +2189,13 @@ function exportLog(){
         <td style="background:${bg};padding:5px 7px;font-weight:600;color:#1a1a1a;font-size:9px">${r.name}</td>
         <td style="background:${bg};padding:5px 7px;color:#9ea0a3;font-size:8px">${r.team}</td>
         <td style="background:${bg};padding:5px 7px;color:#3f3f40;font-size:9px">${r.item}</td>
-        <td style="background:${bg};padding:5px 7px;text-align:center;color:#3f3f40;font-size:9px">${r.size||'—'}</td>
+        <td style="background:${bg};padding:5px 7px;text-align:center;color:#3f3f40;font-size:9px">${r.size||'\u2014'}</td>
         <td style="background:${bg};padding:5px 7px;text-align:center;font-weight:700;font-size:10px">${r.qty}</td>
         <td style="background:${bg};padding:5px 7px;text-align:center">${sigHtml}</td>
       </tr>`;
     });
     rowsHtml+=`<tr>
-      <td colspan="6" style="background:#fffde6;border-top:2px solid #fddd00;padding:4px 12px;font-size:8px;color:#a06000;font-style:italic">Subtotal — ${new Date(d+'T12:00:00').toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'})}</td>
+      <td colspan="6" style="background:#fffde6;border-top:2px solid #fddd00;padding:4px 12px;font-size:8px;color:#a06000;font-style:italic">Subtotal \u2014 ${new Date(d+'T12:00:00').toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'})}</td>
       <td style="background:#fffde6;border-top:2px solid #fddd00;padding:4px 8px;text-align:center;font-weight:700;font-size:10px;color:#a06000">${dayTotal}</td>
       <td style="background:#fffde6;border-top:2px solid #fddd00"></td>
     </tr>`;
