@@ -755,7 +755,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--yellow);
         <div class="card">
           <div class="card-header">
             <span class="card-title">Items received</span>
-            <span style="font-size:11px;color:var(--grey)">Enter qty received for each item &#8212; leave blank or 0 to skip</span>
+            <span style="font-size:11px;color:var(--grey)">Positive to add stock &#183; Negative to deduct &#183; Leave blank or 0 to skip</span>
           </div>
           <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0" id="recv-items-grid"></div>
         </div>
@@ -1130,7 +1130,7 @@ function renderReceiveGrid(){
       <div class="recv-item-stock">In stock: <strong>${s.qty}</strong> &nbsp;\u00b7&nbsp; Min: <strong>${thresholds[s.n]||12}</strong></div>
       <div class="recv-item-input-row">
         <input type="number" min="0" placeholder="0" id="recv-qty-${s.n.replace(/[^a-zA-Z0-9]/g,'_')}"
-          oninput="document.getElementById('recv-preview-card').style.display='none';document.getElementById('recv-confirm-btn').style.display='none'">
+          oninput="document.getElementById('recv-preview-card').style.display='none';document.getElementById('recv-confirm-btn').style.display='none'" style="width:70px;text-align:center">
         <span class="recv-item-stock">units</span>
       </div>
     </div>
@@ -1143,7 +1143,7 @@ function getReceiveQtys(){
     const el = document.getElementById(id);
     const qty = el ? parseInt(el.value)||0 : 0;
     return {stock: s, qty};
-  }).filter(r => r.qty > 0);
+  }).filter(r => r.qty !== 0);
 }
 
 function previewReceive(){
@@ -1153,14 +1153,17 @@ function previewReceive(){
     return;
   }
   const tbody = document.getElementById('recv-preview-tbody');
-  tbody.innerHTML = items.map(r => `
-    <tr>
+  tbody.innerHTML = items.map(r => {
+    const newQty = r.stock.qty + r.qty;
+    const isNeg = r.qty < 0;
+    const newQtyColor = newQty < 0 ? 'var(--red)' : newQty === 0 ? 'var(--grey)' : 'var(--green)';
+    return `<tr>
       <td style="font-weight:500">${r.stock.n}</td>
       <td>${r.stock.qty}</td>
-      <td style="color:var(--green);font-weight:700">+${r.qty}</td>
-      <td class="recv-preview-new">${r.stock.qty + r.qty}</td>
-    </tr>
-  `).join('');
+      <td style="color:${isNeg?'var(--red)':'var(--green)'};font-weight:700">${isNeg?'':'+'}${r.qty}</td>
+      <td style="color:${newQtyColor};font-weight:700">${newQty < 0 ? '0 (floor)' : newQty}</td>
+    </tr>`;
+  }).join('');
   document.getElementById('recv-preview-count').textContent = items.length + ' item' + (items.length>1?'s':'');
   document.getElementById('recv-preview-card').style.display = 'block';
   document.getElementById('recv-confirm-btn').style.display = 'inline-flex';
